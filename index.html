@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      display: grid;
+      height: 100vh;
+      height: 100dvh;
+      margin: 0;
+    }
+    
+    body > * {
+      border: none;
+      box-sizing: border-box;
+      margin: 0;
+      outline: none;
+    }
+    
+    textarea {
+      font-size: 1rem;
+      padding: 1rem;
+      padding-top: 1.5rem;
+      tab-size: 1em;
+    }
+    
+    .hide {
+      display: none;
+    }
+    
+    iframe {
+      height: 100%;
+      width: 100%;
+    }
+
+    .full {
+      border: none;
+      height: 100vh !important;
+      height: 100dvh !important;
+      width: 100vw !important;
+    }
+    
+    @media (aspect-ratio >= 1) {
+      body {
+        grid-template-columns: auto 1fr;
+      }
+      
+      textarea {
+        height: 100% !important;
+        resize: horizontal;
+        width: 50vw;
+      }
+      
+      iframe {
+        border-left: 1px solid;
+      }
+    }
+    
+    @media (aspect-ratio < 1) {
+      body {
+        grid-template-rows: auto 1fr;
+      }
+      
+      textarea {
+        height: 50vh;
+        height: 50dvh;
+        resize: vertical;
+        width: 100% !important;
+      }
+      
+      iframe {
+        border-top: 1px solid;
+      }
+    }
+      
+    #controls {
+      background-color: #fffb;
+      position: fixed;
+    }
+  </style>
+</head>
+<body onload="if (location.hash) textarea.value = decodeURIComponent(location.hash.slice(1)); update()">
+  <textarea id="textarea" autocomplete="off" autofocus oninput="update()">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ediKing</title>
+  <style>
+    body {
+      align-items: center;
+      background-image: radial-gradient(red 25%, transparent 0);
+      background-repeat: space;
+      background-size: 10vmin 10vmin;
+      display: flex;
+      flex-direction: column;
+      font-size: max(2em, 7vw);
+      justify-content: safe center;
+      margin: 0;
+      min-height: 100vh;
+      min-height: 100dvh;
+    }
+    
+    body > * {
+      background-color: #ff88;
+      padding: .1em .3em;
+    }
+  </style>
+</head>
+<body>
+  <h1>Why</h1>
+  <h3>do you</h3>
+  <h3>always</h3>
+  <h6>sit on dots?</h6>
+</body>
+</html></textarea>
+  <iframe id="iframe"></iframe>
+  <div id="controls">
+    <label title="Fullscreen [Ctrl+Shift+F]">
+      <input id="full" autocomplete="off" type="checkbox" onchange="textarea.classList.toggle('hide', this.checked); iframe.classList.toggle('full', this.checked)" aria-keyshortcuts="Ctrl+Shift+F">
+      &#x21f1;
+    </label>
+  </div>
+  <script>
+    iframe.addEventListener('load', () => {
+      const title = iframe.contentDocument.title
+      if (title)
+        document.title = title
+      iframe.contentDocument.querySelectorAll('a').forEach(a => {
+        if (a.origin != location.origin)
+          a.target = '_blank'
+      })
+    })
+    
+    function update() {
+      iframe.srcdoc = textarea.value
+      history.replaceState(history.state, '', '#' + encodeURIComponent(textarea.value))
+    }
+    
+    textarea.addEventListener('keydown', e => {
+      if (e.key == 'Tab' && !e.altKey && !e.getModifierState?.('AltGraph') && !e.ctrlKey && !e.metaKey) 
+      {
+        e.preventDefault()
+        const start = textarea.selectionStart
+        const end = textarea.selectionEnd
+        textarea.selectionEnd = start
+        if (!e.shiftKey)
+          document.execCommand('insertText', false, '\t')
+        else if (textarea.value[textarea.selectionStart - 1]?.match(/\s/))
+          document.execCommand('delete')
+        textarea.selectionEnd = textarea.selectionStart + end - start
+      }
+    })
+    
+    addEventListener('keydown', e => {
+      if (e.key == 'F' && !e.altKey && !e.getModifierState?.('AltGraph') && (e.ctrlKey || e.metaKey) && e.shiftKey) {
+        e.preventDefault()
+        full.click()
+      }
+    })
+  </script>
+</body>
+</html>
