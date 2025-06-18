@@ -89,14 +89,14 @@
       content: '\21f2';
     }
 
-    #full + label:is(:hover, :focus-visible) {
-      background-color: #d6d6d6;
+    @media (hover: hover) {
+      #full + label:is(:hover, :focus-visible) {
+        background-color: #d6d6d6;
+      }
     }
 
-    @media (hover: hover) {
-      #full + label:active {
-        background-color: #a6a6a6;
-      }
+    #full + label:active {
+      background-color: #a6a6a6;
     }
   </style>
 </head>
