@@ -21,7 +21,6 @@
     textarea {
       font-size: 1rem;
       padding: 1rem;
-      padding-top: 1.5rem;
       tab-size: 1em;
     }
     
@@ -75,8 +74,27 @@
     }
       
     #controls {
-      background-color: #fffb;
       position: fixed;
+    }
+
+    #full {
+      display: none;
+    }
+
+    #full + label::before {
+      content: '\21f1';
+    }
+
+    #full:checked + label::before {
+      content: '\21f2';
+    }
+
+    #full + label:is(:hover, :focus-visible) {
+      background-color: #d6d6d6;
+    }
+
+    #full + label:active {
+      background-color: #a6a6a6;
     }
   </style>
 </head>
@@ -118,10 +136,9 @@
 </html></textarea>
   <iframe id="iframe"></iframe>
   <div id="controls">
-    <label title="Fullscreen [Ctrl+Shift+F]">
-      <input id="full" autocomplete="off" type="checkbox" onchange="textarea.classList.toggle('hide', this.checked); iframe.classList.toggle('full', this.checked)" aria-keyshortcuts="Ctrl+Shift+F">
-      &#x21f1;
-    </label>
+    <input id="full" autocomplete="off" type="checkbox" onchange="textarea.classList.toggle('hide', this.checked); iframe.classList.toggle('full', this.checked)" aria-keyshortcuts="Ctrl+Shift+F">
+    <label for="full" title="Toggle code editor
+    [Ctrl+Shift+F]"></label>
   </div>
   <script>
     iframe.addEventListener('load', () => {
