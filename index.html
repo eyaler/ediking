@@ -80,7 +80,7 @@
     }
   </style>
 </head>
-<body onload="if (location.hash) textarea.value = decodeURIComponent(location.hash.slice(1)); update()">
+<body onload="update(location.hash)">
   <textarea id="textarea" autocomplete="off" autofocus oninput="update()">
 <!DOCTYPE html>
 <html lang="en">
@@ -134,9 +134,12 @@
       })
     })
     
-    function update() {
+    function update(hash) {
+      if (hash)
+        textarea.value = decodeURIComponent(location.hash.slice(1))
       iframe.srcdoc = textarea.value
-      history.replaceState(history.state, '', '#' + encodeURIComponent(textarea.value))
+      if (hash != '')
+        history.replaceState(history.state, '', '#' + encodeURIComponent(textarea.value))
     }
     
     textarea.addEventListener('keydown', e => {
