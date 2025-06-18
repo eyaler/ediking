@@ -24,7 +24,7 @@
       tab-size: 1em;
     }
     
-    .hide, textarea.hide ~ #controls.conditional_hide {
+    .hide, textarea.hide ~ #controls.conditional_hide, textarea.hide ~ #controls a {
       display: none;
     }
     
@@ -75,6 +75,11 @@
       
     #controls {
       position: fixed;
+    }
+
+    #controls a {
+      font-size: .7rem;
+      text-decoration: none;
     }
 
     #full {
@@ -141,6 +146,7 @@
     <input id="full" autocomplete="off" type="checkbox" aria-keyshortcuts="Ctrl+Shift+F">
     <label for="full" title="Toggle code editor
     [Ctrl+Shift+F]"></label>
+    <div><a href="https://github.com/eyaler/ediking">&#x1f431;</a></div>
   </div>
 
   <script>
