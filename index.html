@@ -40,7 +40,7 @@
       width: 100vw !important;
     }
     
-    @media (aspect-ratio >= 1) {
+    @media (aspect-ratio > 16 / 18) {
       body {
         grid-template-columns: auto 1fr;
       }
@@ -56,7 +56,7 @@
       }
     }
     
-    @media (aspect-ratio < 1) {
+    @media (aspect-ratio <= 16 / 18) {
       body {
         grid-template-rows: auto 1fr;
       }
