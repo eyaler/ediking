@@ -24,7 +24,7 @@
       tab-size: 1em;
     }
     
-    .hide, textarea.hide ~ #controls {
+    .hide, textarea.hide ~ #controls.conditional_hide {
       display: none;
     }
     
@@ -174,6 +174,7 @@
         const disp = get_code_display()
         if (disp) {
           if (!full.checked) full.click()
+          if (disp == 2) controls.classList.add('conditional_hide')
           if (disp >= 3) controls.classList.add('hide')
         }
         if (hash)
