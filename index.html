@@ -100,7 +100,7 @@
     }
   </style>
 </head>
-<body onload="update(location.hash)">
+<body onload="const disp = get_code_display(); if (disp) {if (!full.checked) full.click(); if (disp >= 2) controls.classList.add('hide')}; update(location.hash)">
   <textarea id="textarea" autocomplete="off" autofocus oninput="update()">
 <!DOCTYPE html>
 <html lang="en">
@@ -138,7 +138,7 @@
 </html></textarea>
   <iframe id="iframe"></iframe>
   <div id="controls">
-    <input id="full" autocomplete="off" type="checkbox" onchange="textarea.classList.toggle('hide', this.checked); iframe.classList.toggle('full', this.checked)" aria-keyshortcuts="Ctrl+Shift+F">
+    <input id="full" autocomplete="off" type="checkbox" oninput="textarea.classList.toggle('hide', this.checked); iframe.classList.toggle('full', this.checked)" aria-keyshortcuts="Ctrl+Shift+F">
     <label for="full" title="Toggle code editor
     [Ctrl+Shift+F]"></label>
   </div>
@@ -153,6 +153,10 @@
       })
     })
     
+    function get_code_display() {
+      return +new URLSearchParams(location.search).get('disp')
+    }
+
     function update(hash) {
       if (hash)
         textarea.value = decodeURIComponent(location.hash.slice(1))
@@ -177,7 +181,7 @@
     })
     
     addEventListener('keydown', e => {
-      if (e.key == 'F' && !e.altKey && !e.getModifierState?.('AltGraph') && (e.ctrlKey || e.metaKey) && e.shiftKey) {
+      if (e.key == 'F' && !e.altKey && !e.getModifierState?.('AltGraph') && (e.ctrlKey || e.metaKey) && e.shiftKey && get_code_display() < 3) {
         e.preventDefault()
         full.click()
       }
