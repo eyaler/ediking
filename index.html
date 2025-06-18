@@ -138,7 +138,7 @@
 </html></textarea>
   <iframe id="iframe"></iframe>
   <div id="controls">
-    <input id="full" autocomplete="off" type="checkbox" oninput="textarea.classList.toggle('hide', this.checked); iframe.classList.toggle('full', this.checked)" aria-keyshortcuts="Ctrl+Shift+F">
+    <input id="full" autocomplete="off" type="checkbox" aria-keyshortcuts="Ctrl+Shift+F">
     <label for="full" title="Toggle code editor
     [Ctrl+Shift+F]"></label>
   </div>
@@ -156,6 +156,17 @@
     function get_code_display() {
       return +new URLSearchParams(location.search).get('disp')
     }
+
+    full.addEventListener('input', () => {
+      textarea.classList.toggle('hide', full.checked)
+      iframe.classList.toggle('full', full.checked)
+      const disp = get_code_display()
+      let state = ''
+      if (!full.checked && disp == 1) state = '?'
+      else if (full.checked && !disp) state = '?disp=1'
+      if (state)
+        history.replaceState(history.state, '', state + location.hash)
+    })
 
     function update(hash) {
       if (hash)
