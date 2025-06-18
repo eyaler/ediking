@@ -24,7 +24,7 @@
       tab-size: 1em;
     }
     
-    .hide {
+    .hide, textarea.hide ~ #controls {
       display: none;
     }
     
@@ -100,7 +100,7 @@
     }
   </style>
 </head>
-<body onload="const disp = get_code_display(); if (disp) {if (!full.checked) full.click(); if (disp >= 2) controls.classList.add('hide')}; update(location.hash)">
+<body onload="update(location.hash)">
   <textarea id="textarea" autocomplete="off" autofocus oninput="update()">
 <!DOCTYPE html>
 <html lang="en">
@@ -142,6 +142,7 @@
     <label for="full" title="Toggle code editor
     [Ctrl+Shift+F]"></label>
   </div>
+
   <script>
     iframe.addEventListener('load', () => {
       const title = iframe.contentDocument.title
@@ -157,7 +158,7 @@
       return +new URLSearchParams(location.search).get('disp')
     }
 
-    full.addEventListener('input', () => {
+    full.addEventListener('change', () => {
       textarea.classList.toggle('hide', full.checked)
       iframe.classList.toggle('full', full.checked)
       const disp = get_code_display()
@@ -168,11 +169,18 @@
         history.replaceState(history.state, '', state + location.hash)
     })
 
-    function update(hash) {
-      if (hash)
-        textarea.value = decodeURIComponent(location.hash.slice(1))
+    function update(hash=null) {
+      if (hash != null) {
+        const disp = get_code_display()
+        if (disp) {
+          if (!full.checked) full.click()
+          if (disp >= 3) controls.classList.add('hide')
+        }
+        if (hash)
+          textarea.value = decodeURIComponent(location.hash.slice(1))
+      }
       iframe.srcdoc = textarea.value
-      if (hash != '')
+      if (hash == null)
         history.replaceState(history.state, '', '#' + encodeURIComponent(textarea.value))
     }
     
@@ -191,7 +199,7 @@
       }
     })
     
-    addEventListener('keydown', e => {
+    document.addEventListener('keydown', e => {
       if (e.key == 'F' && !e.altKey && !e.getModifierState?.('AltGraph') && (e.ctrlKey || e.metaKey) && e.shiftKey && get_code_display() < 3) {
         e.preventDefault()
         full.click()
