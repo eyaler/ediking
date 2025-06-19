@@ -24,7 +24,7 @@
       tab-size: 1em;
     }
     
-    .hide, textarea.hide ~ #controls.conditional_hide, textarea.hide ~ #controls a {
+    .hide, textarea.hide ~ #controls.conditional_hide, textarea.hide ~ #controls :not(:is(#full, #full + label)) {
       display: none;
     }
     
@@ -74,12 +74,23 @@
     }
       
     #controls {
+      display: flex;
+      flex-direction: column;
+      gap: .4rem;
       position: fixed;
     }
 
     #controls a {
-      font-size: .7rem;
+      font-size: .75rem;
       text-decoration: none;
+    }
+
+    #controls button {
+      border: none;
+    }
+
+    #controls button:not(:is(:hover, :focus-visible)) {
+      background-color: inherit;
     }
 
     #full {
@@ -96,12 +107,12 @@
 
     @media (hover: hover) {
       #full + label:is(:hover, :focus-visible) {
-        background-color: #d6d6d6;
+        background-color: #d0d0d7;
       }
     }
 
     #full + label:active {
-      background-color: #a6a6a6;
+      background-color: #b1b1b9;
     }
   </style>
 </head>
@@ -143,10 +154,11 @@
 </html></textarea>
   <iframe id="iframe"></iframe>
   <div id="controls">
-    <input id="full" autocomplete="off" type="checkbox" aria-keyshortcuts="Ctrl+Shift+F">
+    <input id="full" autocomplete="off" type="checkbox" aria-controls="textarea" aria-expanded="true" aria-keyshortcuts="Ctrl+Shift+F">
     <label for="full" title="Toggle code editor
     [Ctrl+Shift+F]"></label>
-    <div><a href="https://github.com/eyaler/ediking">&#x1f431;</a></div>
+    <button onclick="download()" aria-keyshortcuts="Ctrl+S" title="Download [Ctrl+S]">&#x2913;</button>
+    <a href="https://github.com/eyaler/ediking">&#x1f431;</a>
   </div>
 
   <script>
@@ -173,6 +185,7 @@
       else if (full.checked && !disp) state = '?disp=1'
       if (state)
         history.replaceState(history.state, '', state + location.hash)
+      full.ariaExpanded = !full.checked
     })
 
     function update(hash=null) {
@@ -207,11 +220,23 @@
     })
     
     document.addEventListener('keydown', e => {
-      if (e.key == 'F' && !e.altKey && !e.getModifierState?.('AltGraph') && (e.ctrlKey || e.metaKey) && e.shiftKey && get_code_display() < 3) {
+      if (!e.altKey && !e.getModifierState?.('AltGraph') && (e.ctrlKey || e.metaKey) &&
+        (e.code == 'KeyF' && e.shiftKey && get_code_display() < 3 || e.code == 'KeyS' && !e.shiftKey)) {
         e.preventDefault()
-        full.click()
+        if (e.code == 'KeyF')
+          full.click()
+        else if (e.code == 'KeyS')
+          download()
       }
     })
+
+    function download() {
+      const file = new Blob([textarea.value], {type: 'text/plain'})
+      const a = document.createElement('a')
+      a.href = URL.createObjectURL(file)
+      a.download = 'index.html'
+      a.click()
+    }
   </script>
 </body>
 </html>
