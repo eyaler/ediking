@@ -205,15 +205,20 @@
     }
     
     document.body.addEventListener('dragover', e => {
-      e.preventDefault()
-      e.dataTransfer.dropEffect = 'copy'
+      if ([...e.dataTransfer.types].some(t => t == 'Files')) {
+        e.preventDefault()
+        e.dataTransfer.dropEffect = 'copy'
+      }
     })
 
     document.body.addEventListener('drop', e => {
+      const files = e.dataTransfer.files
+      if (!files.length)
+        return
       e.preventDefault()
       let have
-      ;[...e.dataTransfer.files].forEach(file => {
-        const reader = new FileReader();
+      ;[...files].forEach(file => {
+        const reader = new FileReader()
         reader.onload = () => {
           if (have)
             textarea.value += '\n\n'
