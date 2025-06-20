@@ -204,6 +204,28 @@
         history.replaceState(history.state, '', '#' + encodeURIComponent(textarea.value))
     }
     
+    document.body.addEventListener('dragover', e => {
+      e.preventDefault()
+      e.dataTransfer.dropEffect = 'copy'
+    })
+
+    document.body.addEventListener('drop', e => {
+      e.preventDefault()
+      let have
+      ;[...e.dataTransfer.files].forEach(file => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          if (have)
+            textarea.value += '\n\n'
+          else
+            textarea.value = ''
+          textarea.value += reader.result
+          have = true
+        }
+        reader.readAsText(file)
+      })
+    })
+
     textarea.addEventListener('keydown', e => {
       if (e.key == 'Tab' && !e.altKey && !e.getModifierState?.('AltGraph') && !e.ctrlKey && !e.metaKey) 
       {
@@ -231,7 +253,7 @@
     })
 
     function download() {
-      const file = new Blob([textarea.value], {type: 'text/plain'})
+      const file = new Blob([textarea.value], {type: 'text/html'})
       const a = document.createElement('a')
       a.href = URL.createObjectURL(file)
       a.download = 'index.html'
