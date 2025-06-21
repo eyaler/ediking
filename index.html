@@ -224,7 +224,13 @@
             textarea.value += '\n\n'
           else
             textarea.value = ''
-          textarea.value += reader.result
+          let content = reader.result
+          console.log(file)
+          if (file.name.endsWith('.css') || file.type == 'text/css')
+            content = `<style>\n${content}\n</style>`
+          else if (file.name.endsWith('.js') || file.type == 'application/x-javascript')
+            content = `<script>\n${content}\n<\/script>`
+          textarea.value += content
           have = true
         }
         reader.readAsText(file)
