@@ -17,34 +17,34 @@
       margin: 0;
       outline: none;
     }
-    
+        
     textarea {
       font-size: 1rem;
       padding: 1rem;
       tab-size: 1em;
     }
-    
+        
     .hide, textarea.hide ~ #controls.conditional_hide, textarea.hide ~ #controls :not(:is(#full, #full + label)) {
       display: none;
     }
-    
+        
     iframe {
       height: 100%;
       width: 100%;
     }
-
+    
     .full {
       border: none;
       height: 100vh !important;
       height: 100dvh !important;
       width: 100vw !important;
     }
-    
+        
     @media (aspect-ratio > 16 / 18) {
       body {
         grid-template-columns: auto 1fr;
       }
-      
+        
       textarea {
         height: 100% !important;
         resize: horizontal;
@@ -67,50 +67,50 @@
         resize: vertical;
         width: 100% !important;
       }
-      
+            
       iframe {
         border-top: 1px solid;
       }
     }
-      
+    
     #controls {
       display: flex;
       flex-direction: column;
       gap: .4rem;
       position: fixed;
     }
-
+    
     #controls a {
       font-size: .75rem;
       text-decoration: none;
     }
-
+    
     #controls button {
       border: none;
     }
-
+    
     #controls button:not(:is(:hover, :focus-visible)) {
       background-color: inherit;
     }
-
+    
     #full {
       display: none;
     }
-
+    
     #full + label::before {
       content: '\21f1';
     }
-
+    
     #full:checked + label::before {
       content: '\21f2';
     }
-
+    
     @media (hover: hover) {
       #full + label:is(:hover, :focus-visible) {
         background-color: #d0d0d7;
       }
     }
-
+    
     #full + label:active {
       background-color: #b1b1b9;
     }
@@ -152,7 +152,7 @@
   <h6>sit on dots?</h6>
 </body>
 </html></textarea>
-  <iframe id="iframe"></iframe>
+  <iframe id="iframe" onload="textarea.focus()"></iframe>
   <div id="controls">
     <input id="full" autocomplete="off" type="checkbox" aria-controls="textarea" aria-expanded="true" aria-keyshortcuts="Ctrl+Shift+F">
     <label for="full" title="Toggle code editor
@@ -160,7 +160,7 @@
     <button onclick="download()" aria-keyshortcuts="Ctrl+S" title="Download [Ctrl+S]">&#x2913;</button>
     <a href="https://github.com/eyaler/ediking">&#x1f431;</a>
   </div>
-
+  
   <script>
     iframe.addEventListener('load', () => {
       const title = iframe.contentDocument.title
@@ -175,7 +175,7 @@
     function get_code_display() {
       return +new URLSearchParams(location.search).get('disp')
     }
-
+    
     full.addEventListener('change', () => {
       textarea.classList.toggle('hide', full.checked)
       iframe.classList.toggle('full', full.checked)
@@ -187,7 +187,7 @@
         history.replaceState(history.state, '', state + location.hash)
       full.ariaExpanded = !full.checked
     })
-
+    
     function update(hash=null) {
       if (hash != null) {
         const disp = get_code_display()
@@ -210,7 +210,7 @@
         e.dataTransfer.dropEffect = 'copy'
       }
     })
-
+    
     document.body.addEventListener('drop', e => {
       const files = e.dataTransfer.files
       if (!files.length)
@@ -225,30 +225,35 @@
           else
             textarea.value = ''
           let content = reader.result
-          console.log(file)
+          const indented = `\n\t\t${content.split('\n').join('\n\t\t')}\n\t`
           if (file.name.endsWith('.css') || file.type == 'text/css')
-            content = `<style>\n${content}\n</style>`
+            content = `\t<style>${indented}</style>`
           else if (file.name.endsWith('.js') || file.type == 'application/x-javascript')
-            content = `<script>\n${content}\n<\/script>`
+            content = `\t<script>${indented}<\/script>`
           textarea.value += content
           have = true
+          update()
         }
         reader.readAsText(file)
       })
     })
-
+    
     textarea.addEventListener('keydown', e => {
-      if (e.key == 'Tab' && !e.altKey && !e.getModifierState?.('AltGraph') && !e.ctrlKey && !e.metaKey) 
-      {
+      if (document.execCommand && (e.key == 'Enter' || e.key == 'Tab' && !e.altKey && !e.getModifierState?.('AltGraph') && !e.ctrlKey && !e.metaKey)) {
         e.preventDefault()
         const start = textarea.selectionStart
-        const end = textarea.selectionEnd
-        textarea.selectionEnd = start
-        if (!e.shiftKey)
-          document.execCommand('insertText', false, '\t')
-        else if (textarea.value[textarea.selectionStart - 1]?.match(/\s/))
-          document.execCommand('delete')
-        textarea.selectionEnd = textarea.selectionStart + end - start
+        const text = textarea.value
+        if (e.key == 'Enter')
+          document.execCommand('insertText', false, '\n' + text.slice(text.lastIndexOf('\n', start - 1) + 1).match(/^[ \t]*/))
+        else if (e.key == 'Tab') {
+          const end = textarea.selectionEnd
+          textarea.selectionEnd = start
+          if (!e.shiftKey)
+            document.execCommand('insertText', false, '\t')
+          else if (text[start - 1]?.match(/\s/))
+            document.execCommand('delete')
+          textarea.selectionEnd = textarea.selectionStart + end - start
+        }
       }
     })
     
@@ -262,7 +267,7 @@
           download()
       }
     })
-
+    
     function download() {
       const file = new Blob([textarea.value], {type: 'text/html'})
       const a = document.createElement('a')
