@@ -3,52 +3,155 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="origin-trial" content="AuNKSznJ6LrYQVkRVSU8tEGYGUKwESgcga0TKEK7Y3dn8krurrd7lw8B2nG34/uyRoZE2wPJVX15KTnFvP0JDQ8AAABVeyJvcmlnaW4iOiJodHRwczovL2V5YWxlci5naXRodWIuaW86NDQzIiwiZmVhdHVyZSI6IkFJV3JpdGVyQVBJIiwiZXhwaXJ5IjoxNzY5NDcyMDAwfQ==">
+  <meta http-equiv="origin-trial" content="Am/ycuw2pTJfI5C2G4K2KBHTB9FNmq/LY1sL2e2vt0RP0Kva7ssoFqmeopY9cDeZyPIYLa1LJFSWgwCf6wNaSwcAAABXeyJvcmlnaW4iOiJodHRwczovL2V5YWxlci5naXRodWIuaW86NDQzIiwiZmVhdHVyZSI6IkFJUmV3cml0ZXJBUEkiLCJleHBpcnkiOjE3Njk0NzIwMDB9">
   <style>
     body {
       display: grid;
       height: 100vh;
       height: 100dvh;
       margin: 0;
+      overflow: clip;
     }
     
-    body > * {
+    .hide,
+    #controls input,
+    #controls:has(#full:checked).conditional_hide,
+    #controls:has(#full:checked) :not(:is(#full, #full + label)),
+    #controls:has(#full:checked) ~ #textareas,
+    #ai:is(:not(:checked), :disabled) ~ #run_stop,
+    #controls:has(#ai:is(:not(:checked), :disabled)) ~ #textareas #prom {
+      display: none !important;
+    }
+    
+    #controls {
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    
+    #controls > * {
+      background-color: inherit;
+      border: none;      
+      padding-block: .2rem;
+      padding-inline: 0;
+      text-align: center;
+    }
+    
+    @media (hover: hover) {
+      #controls > :is(:hover, :focus-visible) {
+        background-color: #e0e0e0;
+      }
+    }
+    
+    #full + label::before {
+      content: '\21f1';
+    }
+    
+    #full:checked + label::before {
+      content: '\21f2';
+    }
+    
+    #controls > :is(:not(:is(#ai, #wrap) + label), :is(#ai, #wrap):not(:checked) + label):active, :is(#ai, #wrap):checked + label:not(:active) {
+      background-color: #c0c0c0;
+    }
+    
+    #ai + label, #github {
+      font-size: .7rem;
+    }
+    
+    #ai:disabled + label {
+      cursor: pointer;
+      opacity: 50%;
+    }
+    
+    #run_stop::before {
+      content: '\25b6\fe0e';
+    }
+
+    #run_stop.thinking::before {
+      content: '\2b1b\fe0e';
+    }
+
+    #download_button {
+      font-size: initial;
+    } 
+
+    #controls a {
+      text-decoration: none;
+    }
+    
+    #textareas {
+      display: grid;
+    }
+    
+    iframe, textarea {
       border: none;
       box-sizing: border-box;
       margin: 0;
       outline: none;
     }
-        
+    
     textarea {
       font-size: 1rem;
       padding: 1rem;
       tab-size: 1em;
     }
-        
-    .hide, textarea.hide ~ #controls.conditional_hide, textarea.hide ~ #controls :not(:is(#full, #full + label)) {
-      display: none;
+    
+    #code {
+      height: 50vh;
+      height: 50dvh;
+      max-height: 100vh;
+      max-height: 100dvh;
+      max-width: 100vw;
+      width: 50vw;
     }
-        
+      
+    #prom {
+      min-height: 0;
+      min-width: 0;
+      resize: none;
+    }
+    
     iframe {
       height: 100%;
+      max-height: 100vh;
+      max-height: 100dvh;
+      max-width: 100vw;
       width: 100%;
     }
     
-    .full {
+    #controls:has(#full:checked) ~ iframe {
       border: none;
       height: 100vh !important;
       height: 100dvh !important;
       width: 100vw !important;
     }
-        
+    
+    #controls:has(#ai:not(:checked)) ~ #prom {
+      border: none;
+    }
+    
     @media (aspect-ratio > 16 / 18) {
       body {
         grid-template-columns: auto 1fr;
       }
-        
-      textarea {
-        height: 100% !important;
+      
+      #textareas {
+        grid-template-rows: auto 1fr;
+        width: min-content;
+      }
+      
+      #controls:has(#ai:not(:checked)) ~ #textareas #code {
+        height: 100vh !important;
+        height: 100dvh !important;
         resize: horizontal;
-        width: 50vw;
+      }
+      
+      #prom {
+        border-top: 1px solid;
       }
       
       iframe {
@@ -61,63 +164,49 @@
         grid-template-rows: auto 1fr;
       }
       
-      textarea {
-        height: 50vh;
-        height: 50dvh;
-        resize: vertical;
-        width: 100% !important;
+      #textareas {
+        grid-template-columns: auto 1fr;
+      }
+      
+      #code {
+        min-height: 100%;
       }
             
+      #controls:has(#ai:not(:checked)) ~ #textareas #code {
+        resize: vertical;
+        width: 100vw !important;
+      }
+      
+      #prom {
+        border-left: 1px solid;
+      }
+      
       iframe {
         border-top: 1px solid;
       }
     }
-    
-    #controls {
-      display: flex;
-      flex-direction: column;
-      gap: .4rem;
-      position: fixed;
-    }
-    
-    #controls a {
-      font-size: .75rem;
-      text-decoration: none;
-    }
-    
-    #controls button {
-      border: none;
-    }
-    
-    #controls button:not(:is(:hover, :focus-visible)) {
-      background-color: inherit;
-    }
-    
-    #full {
-      display: none;
-    }
-    
-    #full + label::before {
-      content: '\21f1';
-    }
-    
-    #full:checked + label::before {
-      content: '\21f2';
-    }
-    
-    @media (hover: hover) {
-      #full + label:is(:hover, :focus-visible) {
-        background-color: #d0d0d7;
-      }
-    }
-    
-    #full + label:active {
-      background-color: #b1b1b9;
-    }
   </style>
 </head>
 <body onload="update(location.hash)">
-  <textarea id="textarea" autocomplete="off" autofocus oninput="update()">
+  <div id="controls">
+    <input id="full" autocomplete="off" type="checkbox" aria-controls="textareas" aria-expanded="true" aria-keyshortcuts="Ctrl+Shift+F">
+    <label for="full" tabindex="0" title="Toggle code editor
+    [Ctrl+Shift+F]"></label>
+    <input id="wrap" checked type="checkbox">
+    <label for="wrap" tabindex="0" title="Word wrap">w</label>
+    <input id="ai" autocomplete="off" type="checkbox" aria-controls="prom" aria-expanded="false">
+    <label for="ai" tabindex="0" title="Toggle prompt editor">&#x1f916;</label>
+    <button id="run_stop" onclick="run_stop_prompt()" aria-keyshortcuts="Ctrl+Enter" title="Run/stop prompt
+    [Ctrl+Enter]"></button>
+    <button id="reload" onclick="update()" title="Reload">&#x27f3;</button>
+    <input id="upload_button" autocomplete="off" multiple type="file">
+    <label for="upload_button" tabindex="0" title="Upload">&#x2912;</label>
+    <button id="download_button" onclick="download()" aria-keyshortcuts="Ctrl+S" title="Download [Ctrl+S]">&#x2913;</button>
+    <a id="github" href="https://github.com/eyaler/ediking" target="_blank">&#x1f431;</a>
+  </div>
+  
+  <div id="textareas">
+    <textarea id="code" autocomplete="off" autofocus oninput="update()">
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -152,16 +241,21 @@
   <h6>sit on dots?</h6>
 </body>
 </html></textarea>
-  <iframe id="iframe" onload="textarea.focus()"></iframe>
-  <div id="controls">
-    <input id="full" autocomplete="off" type="checkbox" aria-controls="textarea" aria-expanded="true" aria-keyshortcuts="Ctrl+Shift+F">
-    <label for="full" title="Toggle code editor
-    [Ctrl+Shift+F]"></label>
-    <button onclick="download()" aria-keyshortcuts="Ctrl+S" title="Download [Ctrl+S]">&#x2913;</button>
-    <a href="https://github.com/eyaler/ediking">&#x1f431;</a>
+    <textarea id="prom" autocomplete="off" placeholder="Prompt here." rows="1"></textarea>
   </div>
   
+  <iframe id="iframe" onload="if (typeof active != 'undefined') active.focus()"></iframe>
+  
   <script>
+    let active, writer, rewriter, controller, user_click
+    
+    controls.querySelectorAll('label').forEach(label => label.addEventListener('keydown', e => {
+      if ((e.key == 'Enter' || e.key == ' ') && !e.altKey && !e.getModifierState?.('AltGraph') && !e.ctrlKey && !e.metaKey && !e.shiftKey) {
+        e.preventDefault()
+        label.click()
+      }
+    }))
+    
     iframe.addEventListener('load', () => {
       const title = iframe.contentDocument.title
       if (title)
@@ -177,16 +271,56 @@
     }
     
     full.addEventListener('change', () => {
-      textarea.classList.toggle('hide', full.checked)
-      iframe.classList.toggle('full', full.checked)
       const disp = get_code_display()
       let state = ''
-      if (!full.checked && disp == 1) state = '?'
-      else if (full.checked && !disp) state = '?disp=1'
+      if (!full.checked && disp == 1)
+        state = '?'
+      else if (full.checked && !disp)
+        state = '?disp=1'
       if (state)
         history.replaceState(history.state, '', state + location.hash)
       full.ariaExpanded = !full.checked
     })
+  
+    ai.addEventListener('change', async () => {
+      if (ai.checked) {
+        if (!writer || !rewriter) {
+          const saved_prompt = prom.value
+          prom.readOnly = true
+          prom.value = 'Downloading model...'
+          run_stop.classList.add('hide')
+          options = {sharedContext: 'Output only a single file HTML code (including CSS/JS inside). JS libraries can be used from CDN. NO external files!'}
+          if (!writer) {
+            writer = true
+            writer = await Writer.create({...options, length: 'long'})
+          }
+          if (!rewriter) {
+            rewriter = true
+            rewriter = await Rewriter.create(options)
+          }
+          prom.value = saved_prompt
+          prom.removeAttribute('readonly')
+          run_stop.classList.remove('hide')
+          if (user_click)
+            prom.focus()
+          user_click = true
+        }
+      } else if (document.activeElement == document.body)
+        code.focus()
+      ai.ariaExpanded = ai.checked
+    })
+  
+    function set_wrap() {
+      textareas.querySelectorAll('textarea').forEach(e => e.style.whiteSpace = wrap.checked ? 'pre-wrap' : 'pre')
+    }
+  
+    wrap.addEventListener('change', () => set_wrap())
+    set_wrap()
+     
+    async function start_ai_if_available() {
+      if (await Writer.availability() == 'available' && await Rewriter.availability() == 'available')
+        ai.click()
+    }
     
     function update(hash=null) {
       if (hash != null) {
@@ -196,12 +330,21 @@
           if (disp == 2) controls.classList.add('conditional_hide')
           if (disp >= 3) controls.classList.add('hide')
         }
+        if (!self.Writer || !self.Rewriter) {
+          ai.disabled = true
+          const label = ai.nextElementSibling
+          label.role = 'link'
+          label.onclick = () => open('https://developer.chrome.com/docs/ai/writer-api', '_blank')
+          label.title = 'Writer/Rewriter APIs not supported\nClick for details!'
+        } else if (!ai.checked)
+          start_ai_if_available()
         if (hash)
-          textarea.value = decodeURIComponent(location.hash.slice(1))
+          code.value = decodeURIComponent(location.hash.slice(1))
       }
-      iframe.srcdoc = textarea.value
+      active = document.activeElement
+      iframe.srcdoc = code.value
       if (hash == null)
-        history.replaceState(history.state, '', '#' + encodeURIComponent(textarea.value))
+        history.replaceState(history.state, '', '#' + encodeURIComponent(code.value))
     }
     
     document.body.addEventListener('dragover', e => {
@@ -216,31 +359,38 @@
       if (!files.length)
         return
       e.preventDefault()
+      upload(files)
+    })
+    
+    upload_button.addEventListener('change', e => upload(e.currentTarget.files))
+
+    function upload(files) {
       let have
       ;[...files].forEach(file => {
         const reader = new FileReader()
         reader.onload = () => {
           if (have)
-            textarea.value += '\n\n'
+            code.value += '\n\n'
           else
-            textarea.value = ''
+            code.value = ''
           let content = reader.result
           const indented = `\n\t\t${content.split('\n').join('\n\t\t')}\n\t`
           if (file.name.endsWith('.css') || file.type == 'text/css')
             content = `\t<style>${indented}</style>`
           else if (file.name.endsWith('.js') || file.type == 'application/x-javascript')
             content = `\t<script>${indented}<\/script>`
-          textarea.value += content
+          code.value += content
           have = true
           update()
         }
         reader.readAsText(file)
       })
-    })
+    }
     
-    textarea.addEventListener('keydown', e => {
-      if (document.execCommand && (e.key == 'Enter' || e.key == 'Tab' && !e.altKey && !e.getModifierState?.('AltGraph') && !e.ctrlKey && !e.metaKey)) {
+    textareas.addEventListener('keydown', e => {
+      if (document.execCommand && (e.key == 'Enter' || e.key == 'Tab') && !e.altKey && !e.getModifierState?.('AltGraph') && !e.ctrlKey && !e.metaKey) {
         e.preventDefault()
+        const textarea = e.target
         const start = textarea.selectionStart
         const text = textarea.value
         if (e.key == 'Enter')
@@ -256,20 +406,57 @@
         }
       }
     })
-    
+
+    async function run_stop_prompt() {
+      if (run_stop.classList.contains('thinking'))
+        controller.abort()
+      else {
+        code.readOnly = true
+        controller = new AbortController()
+        let stream
+        let resp = ''
+        run_stop.classList.add('thinking')
+        const code_text = code.value.trim()
+        const prompt_text = prom.value.trim()
+        const abort_signal = {signal: controller.signal}
+        try {
+          if (!code_text && prompt_text)
+            stream = await writer.writeStreaming(prompt_text, abort_signal)
+          else
+            stream = await rewriter.rewriteStreaming(code_text, {context: prompt_text, ...abort_signal})
+          for await (const chunk of stream) {
+            resp += chunk
+            resp = resp.replace(/^```html\r?\n?/, '')
+            code.value = resp
+          }
+          code.value = resp.replace(/\r?\n?```$/, '')
+          update()
+        } catch (error) {
+          if (error.name == 'QuotaExceededError')
+            alert(`Error: LLM input (code + prompt) is ${error.requested.toLocaleString()} tokens,\nbut model is limited to ${error.quota.toLocaleString()} tokens.`);
+          if (error.name != 'AbortError')
+            console.error(error)
+        }
+      }
+      run_stop.classList.remove('thinking')
+      code.removeAttribute('readonly')
+    }
+
     document.addEventListener('keydown', e => {
       if (!e.altKey && !e.getModifierState?.('AltGraph') && (e.ctrlKey || e.metaKey) &&
-        (e.code == 'KeyF' && e.shiftKey && get_code_display() < 3 || e.code == 'KeyS' && !e.shiftKey)) {
+        (e.code == 'KeyF' && e.shiftKey && get_code_display() < 3 || (e.key == 'Enter' && writer && rewriter || e.code == 'KeyS') && !e.shiftKey)) {
         e.preventDefault()
         if (e.code == 'KeyF')
           full.click()
-        else if (e.code == 'KeyS')
+        else if (e.key == 'Enter') {
+          run_stop_prompt()  
+        } else if (e.code == 'KeyS')
           download()
       }
     })
-    
+        
     function download() {
-      const file = new Blob([textarea.value], {type: 'text/html'})
+      const file = new Blob([code.value], {type: 'text/html'})
       const a = document.createElement('a')
       a.href = URL.createObjectURL(file)
       a.download = 'index.html'
