@@ -292,7 +292,7 @@
           options = {
             sharedContext: 'Output only a single file HTML code (including CSS/JS inside). JS libraries can be used from CDN. NO external files!',
             monitor(m) {
-              m.addEventListener('downloadprogress', e => console.log(`Downloaded ${e.loaded * 100}%`))
+              m.addEventListener('downloadprogress', e => {if (prom.readOnly) prom.value = `Downloading model... ${e.loaded * 100 | 0}%`})
             }
           }
           try {
@@ -310,6 +310,10 @@
               prom.focus()
             user_click = true
           } catch (error) {
+            if (writer === true)
+              writer = false
+            if (rewriter === true)
+              rewriter = false
             alert(error)
             ai.checked = false
           }
