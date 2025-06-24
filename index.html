@@ -289,21 +289,30 @@
           prom.readOnly = true
           prom.value = 'Downloading model...'
           run_stop.classList.add('hide')
-          options = {sharedContext: 'Output only a single file HTML code (including CSS/JS inside). JS libraries can be used from CDN. NO external files!'}
-          if (!writer) {
-            writer = true
-            writer = await Writer.create({...options, length: 'long'})
+          options = {
+            sharedContext: 'Output only a single file HTML code (including CSS/JS inside). JS libraries can be used from CDN. NO external files!',
+            monitor(m) {
+              m.addEventListener('downloadprogress', e => console.log(`Downloaded ${e.loaded * 100}%`))
+            }
           }
-          if (!rewriter) {
-            rewriter = true
-            rewriter = await Rewriter.create(options)
+          try {
+            if (!writer) {
+              writer = true
+              writer = await Writer.create({...options, length: 'long'})
+            }
+            if (!rewriter) {
+              rewriter = true
+              rewriter = await Rewriter.create(options)
+            }
+            prom.removeAttribute('readonly')
+            run_stop.classList.remove('hide')
+            if (user_click)
+              prom.focus()
+            user_click = true
+          } catch (error) {
+            alert(error)
           }
           prom.value = saved_prompt
-          prom.removeAttribute('readonly')
-          run_stop.classList.remove('hide')
-          if (user_click)
-            prom.focus()
-          user_click = true
         }
       } else if (document.activeElement == document.body)
         code.focus()
@@ -435,7 +444,7 @@
           if (error.name == 'QuotaExceededError')
             alert(`Error: LLM input (code + prompt) is ${error.requested.toLocaleString()} tokens,\nbut model is limited to ${error.quota.toLocaleString()} tokens.`);
           if (error.name != 'AbortError')
-            console.error(error)
+            alert(error)
         }
       }
       run_stop.classList.remove('thinking')
