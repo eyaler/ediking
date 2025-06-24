@@ -282,27 +282,28 @@
       full.ariaExpanded = !full.checked
     })
   
+    function monitor(m) {
+      m.addEventListener('downloadprogress', e => {if (prom.readOnly) prom.value = `Downloading model... ${e.loaded * 100 | 0}%`})
+    }
+    
     ai.addEventListener('change', async () => {
       if (ai.checked) {
         if (!writer || !rewriter) {
           const saved_prompt = prom.value
           prom.readOnly = true
-          prom.value = 'Downloading model...'
+          prom.value = 'Loading model...'
           run_stop.classList.add('hide')
-          options = {
-            sharedContext: 'Output only a single file HTML code (including CSS/JS inside). JS libraries can be used from CDN. NO external files!',
-            monitor(m) {
-              m.addEventListener('downloadprogress', e => {if (prom.readOnly) prom.value = `Downloading model... ${e.loaded * 100 | 0}%`})
-            }
-          }
+          options = {sharedContext: 'Output only a single file HTML code (including CSS/JS inside). JS libraries can be used from CDN. NO external files!'}
           try {
             if (!writer) {
               writer = true
-              writer = await Writer.create({...options, length: 'long'})
+              const monitor_opt = await Writer.availability() != 'available' ? {monitor} : {}
+              writer = await Writer.create({...monitor_opt, ...options, length: 'long'})
             }
             if (!rewriter) {
               rewriter = true
-              rewriter = await Rewriter.create(options)
+              const monitor_opt = await Rewriter.availability() != 'available' ? {monitor} : {}
+              rewriter = await Rewriter.create({...monitor_opt, ...options})
             }
             prom.removeAttribute('readonly')
             run_stop.classList.remove('hide')
