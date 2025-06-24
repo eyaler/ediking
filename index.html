@@ -190,7 +190,7 @@
 <body onload="update(location.hash)">
   <div id="controls">
     <input id="full" autocomplete="off" type="checkbox" aria-controls="textareas" aria-expanded="true" aria-keyshortcuts="Ctrl+Shift+F">
-    <label for="full" tabindex="0" title="Toggle code editor
+    <label for="full" tabindex="0" title="Toggle editor
     [Ctrl+Shift+F]"></label>
     <input id="wrap" checked type="checkbox">
     <label for="wrap" tabindex="0" title="Word wrap">w</label>
@@ -244,7 +244,7 @@
     <textarea id="prom" autocomplete="off" placeholder="Prompt here." rows="1"></textarea>
   </div>
   
-  <iframe id="iframe" onload="if (typeof active != 'undefined') active.focus()"></iframe>
+  <iframe id="iframe"></iframe>
   
   <script>
     let active, writer, rewriter, controller, user_click
@@ -257,9 +257,13 @@
     }))
     
     iframe.addEventListener('load', () => {
+      if (typeof active != 'undefined')
+        active.focus()
       const title = iframe.contentDocument.title
       if (title)
         document.title = title
+      document.head.querySelectorAll('link[rel=icon]').forEach(e => e.remove())
+      iframe.contentDocument.head.querySelectorAll('link[rel=icon]').forEach(e => document.head.appendChild(e))
       iframe.contentDocument.querySelectorAll('a').forEach(a => {
         if (a.origin != location.origin)
           a.target = '_blank'
@@ -282,6 +286,13 @@
       full.ariaExpanded = !full.checked
     })
   
+    function set_wrap() {
+      textareas.querySelectorAll('textarea').forEach(e => e.style.whiteSpace = wrap.checked ? 'pre-wrap' : 'pre')
+    }
+    
+    wrap.addEventListener('change', () => set_wrap())
+    set_wrap()
+    
     function monitor(m) {
       m.addEventListener('downloadprogress', e => {if (prom.readOnly) prom.value = `Downloading model... ${e.loaded * 100 | 0}%`})
     }
@@ -325,13 +336,6 @@
       ai.ariaExpanded = ai.checked
     })
   
-    function set_wrap() {
-      textareas.querySelectorAll('textarea').forEach(e => e.style.whiteSpace = wrap.checked ? 'pre-wrap' : 'pre')
-    }
-  
-    wrap.addEventListener('change', () => set_wrap())
-    set_wrap()
-     
     async function start_ai_if_available() {
       if (await Writer.availability() == 'available' && await Rewriter.availability() == 'available')
         ai.click()
