@@ -1,9 +1,10 @@
 # ediKing
-A client-side HTML editor
+### A client-side HTML editor
+Short link: [tfi.la/e](https://tfi.la/e)
 
 ### Shortcuts
 - Ctrl-Shift-F - Toggle code editor (full screen)
-- Ctrl-Enter - Run/stop prompt (when LLM is available)
+- Ctrl-Enter - Run/stop generation (when LLM is available)
 - Ctrl-S - Download HTML
 - Tab, Shift-Tab, Enter - Indentation at cursor location (not line-level but preserves undo stack)
 - Drag and drop (multiple) files - upload and add HTML tags for CSS and JS
@@ -14,12 +15,12 @@ A client-side HTML editor
 - ?disp=2 - hide editor, no code toggle button (keyboard shortcut still works)
 - ?disp=3 - hide editor, no code toggle button, no keyboard shortcut
 
-### Convenience features
+### iframe convenience features
 - Prevents iframe from stealing focus
 - Adds `target="_blank"` to `a` links of different origin, to allow opening from iframe
-- Grab title and favicon from code
+- Grab title and favicon from iframe
 
-### Experimental Writer / Rewriter Chrome API support
+### Experimental Writer / Rewriter Chrome API integration
 - Requires Chrome Desktop 138+, 22 GB disk space, and 4 GB GPU (see: https://developer.chrome.com/docs/ai/writer-api)
 - Uses Write API when there is a prompt and no code, otherwise uses Rewrite API
 - My implementation is very basic and with the small Gemini Nano model - results are not good

@@ -196,7 +196,7 @@
     <label for="wrap" tabindex="0" title="Word wrap">w</label>
     <input id="ai" autocomplete="off" type="checkbox" aria-controls="prom" aria-expanded="false">
     <label for="ai" tabindex="0" title="Toggle prompt editor">&#x1f916;</label>
-    <button id="run_stop" onclick="run_stop_prompt()" aria-keyshortcuts="Ctrl+Enter" title="Run/stop prompt
+    <button id="run_stop" onclick="run_stop_gen()" aria-keyshortcuts="Ctrl+Enter" title="Run/stop generation
     [Ctrl+Enter]"></button>
     <button id="reload" onclick="update()" title="Reload">&#x27f3;</button>
     <input id="upload_button" autocomplete="off" multiple type="file">
@@ -426,7 +426,7 @@
       }
     })
 
-    async function run_stop_prompt() {
+    async function run_stop_gen() {
       if (run_stop.classList.contains('thinking'))
         controller.abort()
       else {
@@ -467,9 +467,9 @@
         e.preventDefault()
         if (e.code == 'KeyF')
           full.click()
-        else if (e.key == 'Enter') {
-          run_stop_prompt()  
-        } else if (e.code == 'KeyS')
+        else if (e.key == 'Enter')
+          run_stop_gen()
+        else if (e.code == 'KeyS')
           download()
       }
     })
