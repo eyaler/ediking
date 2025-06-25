@@ -22,10 +22,15 @@ Short link: [tfi.la/e](https://tfi.la/e)
 
 ### Experimental Writer / Rewriter Chrome API integration
 - Requires Chrome Desktop 138+, 22 GB disk space, and 4 GB GPU (see: https://developer.chrome.com/docs/ai/writer-api)
-- Uses Write API when there is a prompt and no code, otherwise uses Rewrite API and gives the prompt is context
-- If some of the code is selected - only that part is rewritten
-  - Note the selection is not visible when editing the prompt
-  - The model is NOT given the surrounding code as that seems to confuse it
+- LLM patterns:
+  - sharedContext = 'Make sure to address comments marked: FIXME, and edit to comments to show: FIXED'
+  - No code -> write(fullcode_prompt* + prompt)
+  - Code + no selection -> rewrite(code, {context: fullcode_prompt* + prompt})
+  - Code + selected** whitespace -> code_before + write(code_before + '[COMPLETE MISSING CODE HERE - ONLY OUTPUT THIS PART]' + code_after + prompt) + code_after
+  - Code + selected** code -> code_before + rewrite(selected_code, {context: prompt***}) + code_after
+  - \* fullcode_prompt = 'Output only a complete single-file HTML code (including CSS/JS inside). JS libraries can be used from CDN. NO external files!'
+  - \** Selection is not visible when editing the prompt
+  - \*** Context does not include surrounding code as that seems to confuse it
 - My implementation is very basic and with the small Gemini Nano model - results are not good
 - Known model download issues:
   - https://issues.chromium.org/issues/427520275,
@@ -35,3 +40,6 @@ Short link: [tfi.la/e](https://tfi.la/e)
   - Automatic error capturing
   - Multimodal input of the rendered iframe screenshot
   - Autopilot mode - mutate the code repeatedly with self-prompting
+
+### Fun
+- Recursion: [tfi.la/e/#recur](https://tfi.la/e/#recur)

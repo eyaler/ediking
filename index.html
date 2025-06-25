@@ -256,13 +256,21 @@
   <script>
     let active, writer, rewriter, controller, user_click
     
-    function get_code_display() {
-      return +new URLSearchParams(location.search).get('disp')
+    function get_url_param(param='disp') {
+      return +new URLSearchParams(location.search).get(param)
+    }
+    
+    function safe_history_replace_state(url) {
+      try {
+        history.replaceState(history.state, '', url)
+      } catch {
+        location.replace(url)
+      }
     }
     
     function update(hash=null) {
       if (hash != null) {
-        const disp = get_code_display()
+        const disp = get_url_param()
         if (disp) {
           if (!full.checked) full.click()
           if (disp == 2) controls.classList.add('conditional_hide')
@@ -279,18 +287,20 @@
             if (await Writer.availability() == 'available' && await Rewriter.availability() == 'available') 
               ai.click()
           })()
-        if (hash)
-          code.value = decodeURIComponent(location.hash.slice(1))
+        if (hash == '#recur')
+          code.value = document.documentElement.outerHTML.replace("'#recur'", 'hash')
+        else if (hash)
+          code.value = decodeURIComponent(hash.slice(1))
       }
       active = document.activeElement
       iframe.srcdoc = code.value
       if (hash == null)
-        history.replaceState(history.state, '', '#' + encodeURIComponent(code.value))
+        safe_history_replace_state('#' + encodeURIComponent(code.value))
     }
     
     iframe.addEventListener('load', () => {
-      if (typeof active != 'undefined')
-        active.focus()
+      active?.focus()
+      active = null
       const title = iframe.contentDocument.title
       if (title)
         document.title = title
@@ -306,14 +316,15 @@
     // Toggle buttons
     
     full.addEventListener('change', () => {
-      const disp = get_code_display()
-      let state = ''
-      if (!full.checked && disp == 1)
-        state = '?'
-      else if (full.checked && !disp)
-        state = '?disp=1'
-      if (state)
-        history.replaceState(history.state, '', state + location.hash)
+      const disp = get_url_param()
+      const url = new URL(location)
+      if (!full.checked && disp == 1 || full.checked && !disp) {
+        if (disp)
+          url.searchParams.delete('disp')
+        else
+          url.searchParams.set('disp', 1)
+        safe_history_replace_state(url)
+      }
       full.ariaExpanded = !full.checked
     })
   
@@ -326,12 +337,14 @@
     
     
     // LLM stuff
-    
-    const shared_context = 'Output only a complete single-file HTML code (including CSS/JS inside). JS libraries can be used from CDN. NO external files!'
+    const shared_context = {sharedContext: 'Make sure to address comments marked: FIXME, and edit to comments to show: FIXED'}
+    const fullcode_prompt = 'Output only a complete single-file HTML code (including CSS/JS inside). JS libraries can be used from CDN. NO external files!'
     
     function monitor(m) {
       m.addEventListener('downloadprogress', e => {if (prom.readOnly) prom.value = `Downloading model... ${e.loaded * 100 | 0}%`})
     }
+    
+    ai.addEventListener('click', e => user_click = e.isTrusted)
     
     ai.addEventListener('change', async () => {
       if (ai.checked) {
@@ -344,12 +357,12 @@
             if (!writer) {
               writer = true
               const monitor_opt = await Writer.availability() != 'available' ? {monitor} : {}
-              writer = await Writer.create({...monitor_opt, sharedContext: shared_context, length: 'long'})
+              writer = await Writer.create({...monitor_opt, ...shared_context, length: 'long'})
             }
             if (!rewriter) {
               rewriter = true
               const monitor_opt = await Rewriter.availability() != 'available' ? {monitor} : {}
-              rewriter = await Rewriter.create(monitor_opt)
+              rewriter = await Rewriter.create({...monitor_opt, ...shared_context})
             }
             prom.removeAttribute('readonly')
             run_stop.classList.remove('hide')
@@ -365,51 +378,61 @@
         }
         if (user_click && !prom.readOnly)
           prom.focus()
-          user_click = true
       } else
         code.focus()
       ai.ariaExpanded = ai.checked
     })
   
     async function run_stop_gen() {
+      if (!ai.checked)
+        ai.click()
       if (run_stop.classList.contains('thinking'))
         controller.abort()
       else {
         code.readOnly = true
-        controller = new AbortController()
-        let stream
-        let resp = ''
-        let pre_text = ''
-        let post_text = ''
         run_stop.classList.add('thinking')
-        const start = code.selectionStart
-        const end = code.selectionEnd
+        
+        controller = new AbortController()
+        const abort_signal = {signal: controller.signal}
+        
         let code_text = code.value
         let prompt_text = prom.value.trim()
-        const orig_length = code_text.length
-        const abort_signal = {signal: controller.signal}
+        
+        const start = code.selectionStart
+        const end = code.selectionEnd
+        const orig_len = code_text.length
+        const partial = start < end && end - start < orig_len
+        const selection = code.value.slice(start, end).trim()
+        
+        let code_before = ''
+        let code_after = ''
+        if (partial) {
+          code_before = code_text.slice(0, start)
+          code_after = code_text.slice(end)
+          code_text = selection
+        } else
+          prompt_text = fullcode_prompt + '\n\n' + prompt_text
+        code_text = code_text.trim()
+                
+        let stream
+        let resp = ''
+        
         try {
-          if (!code_text.trim() && prompt_text)
+          if (!code_text) {
+            if (partial)
+              prompt_text = code_before.trim() + '\n[COMPLETE MISSING CODE HERE - ONLY OUTPUT THIS PART]\n' + code_after.trim() + '\n\n' + prompt_text
             stream = await writer.writeStreaming(prompt_text, abort_signal)
-          else {
-            if (start < end && end - start < code_text.length) {
-              //prompt_text += `\n\nRewrite only the selected code which is part of the full single-file HTML code (including CSS/JS inside):\n${code_text.trim()}`.trim()
-              pre_text = code_text.slice(0, start)
-              post_text = code_text.slice(end)
-              code_text = code.value.slice(start, end)
-            } else
-              prompt_text = `${shared_context}\n\n${prompt_text}`
-            stream = await rewriter.rewriteStreaming(code_text.trim(), {context: prompt_text, ...abort_signal})
-          }
+          } else
+            stream = await rewriter.rewriteStreaming(code_text, {context: prompt_text, ...abort_signal})
           for await (const chunk of stream) {
             resp += chunk
             resp = resp.replace(/^```(html|css|javascript|js)\r?\n?/, '')
-            code.value = pre_text + resp + post_text
+            code.value = code_before + resp + code_after
           }
-          code.value = pre_text + resp.replace(/\r?\n?```$/, '') + post_text
+          code.value = code_before + resp.replace(/\r?\n?```$/, '') + code_after
           update()
-          code.selectionStart = start
-          code.selectionEnd = end + code.value.length - orig_length
+          if (partial)
+            code.selectionEnd = end + code.value.length - orig_len
         } catch (error) {
           if (error.name == 'QuotaExceededError')
             alert(`Error: LLM input (code + prompt) is ${error.requested.toLocaleString()} tokens,\nbut model is limited to ${error.quota.toLocaleString()} tokens.`);
@@ -493,7 +516,7 @@
 
     document.addEventListener('keydown', e => {
       if (!e.altKey && !e.getModifierState?.('AltGraph') && (e.ctrlKey || e.metaKey) &&
-        (e.code == 'KeyF' && e.shiftKey && get_code_display() < 3 || (e.key == 'Enter' && writer && rewriter || e.code == 'KeyS') && !e.shiftKey)) {
+        (e.code == 'KeyF' && e.shiftKey && get_url_param() < 3 || (e.key == 'Enter' && writer && rewriter || e.code == 'KeyS') && !e.shiftKey)) {
         e.preventDefault()
         if (e.code == 'KeyF')
           full.click()
