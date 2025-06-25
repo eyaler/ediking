@@ -26,17 +26,19 @@ Short link: [tfi.la/e](https://tfi.la/e)
   - sharedContext = 'Make sure to address comments marked: FIXME, and edit to comments to show: FIXED'
   - No code -> write(fullcode_prompt* + prompt)
   - Code + no selection -> rewrite(code, {context: fullcode_prompt* + prompt})
-  - Code + selected** whitespace -> code_before + write(code_before + '[COMPLETE MISSING CODE HERE - ONLY OUTPUT THIS PART]' + code_after + prompt) + code_after
-  - Code + selected** code -> code_before + rewrite(selected_code, {context: prompt***}) + code_after
+  - Code + selected** whitespace -> code_before + write(code_before + '[COMPLETE MISSING CODE HERE - ONLY OUTPUT THIS PART]'*** + code_after + prompt) + code_after
+  - Code + selected** code -> code_before + rewrite(selected_code, {context: prompt****}) + code_after
   - \* fullcode_prompt = 'Output only a complete single-file HTML code (including CSS/JS inside). JS libraries can be used from CDN. NO external files!'
   - \** Selection is not visible when editing the prompt
-  - \*** Context does not include surrounding code as that seems to confuse it
+  - \*** Sometimes model duplicates the code outside anyway
+  - \**** Context does not include surrounding code as that seems to confuse it
 - My implementation is very basic and with the small Gemini Nano model - results are not good
 - Known model download issues:
-  - https://issues.chromium.org/issues/427520275,
+  - https://issues.chromium.org/issues/427520275
   - https://issues.chromium.org/issues/427535092
 - Future opportunities:
   - Code completion
+  - Inline protected code regions (e.g. tests)
   - Automatic error capturing
   - Multimodal input of the rendered iframe screenshot
   - Autopilot mode - mutate the code repeatedly with self-prompting
