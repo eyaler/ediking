@@ -420,7 +420,7 @@
         try {
           if (!code_text) {
             if (partial)
-              prompt_text = code_before.trim() + '\n[COMPLETE MISSING CODE HERE - ONLY OUTPUT THIS PART]\n' + code_after.trim() + '\n\n' + prompt_text
+              prompt_text = code_before.replaceALL('FIXME', '').trim() + '\n[COMPLETE MISSING CODE HERE - ONLY OUTPUT THIS PART]\n' + code_after.replaceALL('FIXME', '').trim() + '\n\n' + prompt_text
             stream = await writer.writeStreaming(prompt_text, abort_signal)
           } else
             stream = await rewriter.rewriteStreaming(code_text, {context: prompt_text, ...abort_signal})
