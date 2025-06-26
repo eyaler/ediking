@@ -5,7 +5,7 @@ Short link: [tfi.la/e](https://tfi.la/e)
 ### Shortcuts
 - Ctrl+Shift+F - Show/hide editor (full screen)
 - Ctrl+Enter - Run/stop generation (when LLM is available)
-- Ctrl+Shift+Enter (or Ctrl-click on the button) - Looping generation (when LLM is available)
+- Ctrl+Shift+Enter (or Ctrl+Click on the button) - Looping generation (when LLM is available)
 - Ctrl+S - Save as HTML file
 - Tab, Shift+Tab, Enter - Indentation at cursor location (not line-level but preserves undo stack)
 - Drag and drop file(s) - Open and add HTML tags for CSS and JS
