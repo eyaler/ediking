@@ -34,9 +34,10 @@ Short link: [tfi.la/e](https://tfi.la/e)
   - \*** Sometimes model duplicates the code outside anyway
   - \**** Context does not include surrounding code as that seems to confuse it
 - My implementation is very basic and with the small Gemini Nano model - results are not good
-- Known model download issues:
+- Known model issues:
   - https://issues.chromium.org/issues/427520275
   - https://issues.chromium.org/issues/427535092
+  - After aborting the next generation is delayed
 - Future opportunities:
   - Code completion
   - Inline protected code regions (e.g. tests)
