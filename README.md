@@ -35,8 +35,8 @@ Short link: [tfi.la/e](https://tfi.la/e)
   - \**** Context does not include surrounding code as that seems to confuse it
 - My implementation is very basic and with the small Gemini Nano model - results are not good
 - Known model issues:
-  - https://issues.chromium.org/issues/427520275
-  - https://issues.chromium.org/issues/427535092
+  - Broken model download - https://issues.chromium.org/issues/427520275
+  - Not enough disk space - https://issues.chromium.org/issues/427535092
   - After aborting the next generation is delayed
 - Future opportunities:
   - Code completion
