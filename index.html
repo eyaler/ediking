@@ -204,7 +204,7 @@
     <button id="run_stop" onclick="run_stop_gen()" aria-keyshortcuts="Ctrl+Enter" title="Run/stop generation
 [Ctrl+Enter]"></button>
     <button onclick="update()" title="Reload iframe">&#x27f3;</button>
-    <button onclick="new_editor(event)" title="New">&#x1f5cb;</button>
+    <button onclick="new_editor(event)" title="New">&#x1f195;</button>
     <input id="open_button" autocomplete="off" multiple type="file">
     <label for="open_button" tabindex="0" title="Open file(s)">&#x1f4c2;&#xfe0e;</label>
     <button onclick="save()" aria-keyshortcuts="Ctrl+S" title="Save file [Ctrl+S]">&#x1f4be;&#xfe0e;</button>
@@ -349,7 +349,6 @@
     ai.addEventListener('change', async () => {
       if (ai.checked) {
         if (!writer || !rewriter) {
-          const saved_prompt = prom.value
           prom.readOnly = true
           prom.value = 'Loading model...'
           run_stop.classList.add('hide')
@@ -374,7 +373,6 @@
             alert(error)
             ai.checked = false
           }
-          prom.value = saved_prompt
         }
         if (user_click && !prom.readOnly)
           prom.focus()
