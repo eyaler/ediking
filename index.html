@@ -56,7 +56,14 @@
       content: '\21f2';
     }
     
-    #controls > :is(:not(:is(#ai, #wrap) + label), :is(#ai, #wrap):not(:checked) + label):active, :is(#ai, #wrap):checked + label:not(:active) {
+    #controls > :is(
+      :is(
+        :not(input[type=checkbox]:not(#full) + label, .running),
+        input[type=checkbox]:not(#full, :checked) + label,
+      ):active,
+      input[type=checkbox]:not(#full):checked + label:not(:active),
+      .running:not(:active)
+    ){
       background-color: #c0c0c0;
     }
     
@@ -70,8 +77,12 @@
       content: '\25b6\fe0e';
     }
 
-    #run_stop.thinking::before {
+    #run_stop.running::before {
       content: '\2b1b\fe0e';
+    }
+    
+    #run_stop.running.loop::before {
+      content: '\2b1b\fe0e\35a';
     }
     
     #share_button {
@@ -195,14 +206,13 @@
 <body onload="update(location.hash)">
   <div id="controls">
     <input id="full" autocomplete="off" type="checkbox" aria-controls="textareas" aria-expanded="true" aria-keyshortcuts="Ctrl+Shift+F">
-    <label for="full" tabindex="0" title="Show/hide editor
-[Ctrl+Shift+F]"></label>
+    <label for="full" tabindex="0" title="Show/hide editor [Ctrl+Shift+F]"></label>
     <input id="wrap" checked type="checkbox">
     <label for="wrap" tabindex="0" title="Word wrap">w</label>
     <input id="ai" autocomplete="off" type="checkbox" aria-controls="prom" aria-expanded="false">
     <label for="ai" tabindex="0" title="Toggle AI">&#x1f916;</label>
-    <button id="run_stop" onclick="run_stop_gen()" aria-keyshortcuts="Ctrl+Enter" title="Run/stop generation
-[Ctrl+Enter]"></button>
+    <button id="run_stop" onclick="run_stop_gen(event.ctrlKey || event.metaKey || event.button == 1)" aria-keyshortcuts="Ctrl+Enter Ctrl+Shift+Enter" title="Run/stop generation [Ctrl+Enter]
+Loop generation [Ctrl+Shift+Enter]"></button>
     <button onclick="update()" title="Reload iframe">&#x27f3;</button>
     <button onclick="new_editor(event)" title="New">&#x1f195;</button>
     <input id="open_button" autocomplete="off" multiple type="file">
@@ -254,7 +264,7 @@
   <iframe id="iframe"></iframe>
   
   <script>
-    let active, writer, rewriter, controller, user_click
+    let active, writer, rewriter, controller, user_click, loop
     
     function get_url_param(param='disp') {
       return +new URLSearchParams(location.search).get(param)
@@ -352,23 +362,29 @@
           prom.readOnly = true
           prom.value = 'Loading model...'
           run_stop.classList.add('hide')
+          let phase
           try {
             if (!writer) {
               writer = true
+              phase = 'writer'
               const monitor_opt = await Writer.availability() != 'available' ? {monitor} : {}
               writer = await Writer.create({...monitor_opt, ...shared_context, length: 'long'})
             }
             if (!rewriter) {
               rewriter = true
+              phase = 'rewriter'
               const monitor_opt = await Rewriter.availability() != 'available' ? {monitor} : {}
               rewriter = await Rewriter.create({...monitor_opt, ...shared_context})
             }
-            prom.removeAttribute('readonly')
-            run_stop.classList.remove('hide')
+            if (writer && writer !== true && rewriter && rewriter !== true) {
+              prom.value = ''
+              prom.removeAttribute('readonly')
+              run_stop.classList.remove('hide')
+            }
           } catch (error) {
-            if (writer === true)
+            if (writer === true && phase == 'writer')
               writer = false
-            if (rewriter === true)
+            if (rewriter === true && phase == 'rewriter')
               rewriter = false
             alert(error)
             ai.checked = false
@@ -381,14 +397,14 @@
       ai.ariaExpanded = ai.checked
     })
   
-    async function run_stop_gen() {
+    async function run_stop_gen(mod) {
       if (!ai.checked)
         ai.click()
-      if (run_stop.classList.contains('thinking'))
-        controller.abort()
-      else {
+      loop = mod
+      run_stop.classList.toggle('loop', loop)
+      if (!run_stop.classList.contains('running')) {
         code.readOnly = true
-        run_stop.classList.add('thinking')
+        run_stop.classList.add('running')
         
         controller = new AbortController()
         const abort_signal = {signal: controller.signal}
@@ -437,9 +453,13 @@
           if (error.name != 'AbortError')
             alert(error)
         }
-      }
-      run_stop.classList.remove('thinking')
-      code.removeAttribute('readonly')
+        run_stop.classList.remove('running')
+        if (loop && !controller?.signal.aborted)
+          run_stop_gen(true)
+        else
+          code.removeAttribute('readonly')
+      } else if (!loop)
+        controller.abort()
     }
     
     
@@ -514,12 +534,12 @@
 
     document.addEventListener('keydown', e => {
       if (!e.altKey && !e.getModifierState?.('AltGraph') && (e.ctrlKey || e.metaKey) &&
-        (e.code == 'KeyF' && e.shiftKey && get_url_param() < 3 || (e.key == 'Enter' && writer && rewriter || e.code == 'KeyS') && !e.shiftKey)) {
+        (e.code == 'KeyF' && e.shiftKey && get_url_param() < 3 || e.key == 'Enter' && writer && rewriter || e.code == 'KeyS' && !e.shiftKey)) {
         e.preventDefault()
         if (e.code == 'KeyF')
           full.click()
         else if (e.key == 'Enter')
-          run_stop_gen()
+          run_stop_gen(e.shiftKey)
         else if (e.code == 'KeyS')
           save()
       }

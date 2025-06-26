@@ -3,10 +3,11 @@
 Short link: [tfi.la/e](https://tfi.la/e)
 
 ### Shortcuts
-- Ctrl-Shift-F - Show/hide editor (full screen)
-- Ctrl-Enter - Run/stop generation (when LLM is available)
-- Ctrl-S - Save as HTML file
-- Tab, Shift-Tab, Enter - Indentation at cursor location (not line-level but preserves undo stack)
+- Ctrl+Shift+F - Show/hide editor (full screen)
+- Ctrl+Enter - Run/stop generation (when LLM is available)
+- Ctrl+Shift+Enter (or Ctrl-click on the button) - Looping generation (when LLM is available)
+- Ctrl+S - Save as HTML file
+- Tab, Shift+Tab, Enter - Indentation at cursor location (not line-level but preserves undo stack)
 - Drag and drop file(s) - Open and add HTML tags for CSS and JS
 
 ### URL API
@@ -41,7 +42,7 @@ Short link: [tfi.la/e](https://tfi.la/e)
   - Inline protected code regions (e.g. tests)
   - Automatic error capturing
   - Multimodal input of the rendered iframe screenshot
-  - Autopilot mode - mutate the code repeatedly with self-prompting
+  - Autopilot mode - allow looping generation to also change the prompt (can currently be emulated via generated code comments)
 
 ### Fun
 - Recursion: [tfi.la/e/#recur](https://tfi.la/e/#recur)
