@@ -18,9 +18,9 @@
     #controls input,
     #controls:has(#full:checked).conditional_hide,
     #controls:has(#full:checked) :not(:is(#full, #full + label)),
-    #controls:has(#full:checked) ~ #textareas,
+    #controls:has(#full:checked) ~ #editor,
     #ai:is(:not(:checked), :disabled) ~ #run_stop,
-    #controls:has(#ai:is(:not(:checked), :disabled)) ~ #textareas #prom {
+    #controls:has(#ai:is(:not(:checked), :disabled)) ~ #editor #prom {
       display: none !important;
     }
     
@@ -93,7 +93,7 @@
       text-decoration: none;
     }
     
-    #textareas {
+    #editor {
       display: grid;
     }
     
@@ -150,12 +150,12 @@
         grid-template-columns: auto 1fr;
       }
       
-      #textareas {
+      #editor {
         grid-template-rows: auto 1fr;
         width: min-content;
       }
       
-      #controls:has(#ai:not(:checked)) ~ #textareas #code {
+      #controls:has(#ai:not(:checked)) ~ #editor #code {
         height: 100vh !important;
         height: 100dvh !important;
         resize: horizontal;
@@ -180,7 +180,7 @@
         grid-template-rows: auto 1fr;
       }
       
-      #textareas {
+      #editor {
         grid-template-columns: auto 1fr;
       }
       
@@ -188,7 +188,7 @@
         min-height: 100%;
       }
             
-      #controls:has(#ai:not(:checked)) ~ #textareas #code {
+      #controls:has(#ai:not(:checked)) ~ #editor #code {
         resize: vertical;
         width: 100vw !important;
       }
@@ -205,7 +205,7 @@
 </head>
 <body onload="update(location.hash)">
   <div id="controls">
-    <input id="full" autocomplete="off" type="checkbox" aria-controls="textareas" aria-expanded="true" aria-keyshortcuts="Ctrl+Shift+F">
+    <input id="full" autocomplete="off" type="checkbox" aria-controls="editor" aria-expanded="true" aria-keyshortcuts="Ctrl+Shift+F">
     <label for="full" tabindex="0" title="Show/hide editor [Ctrl+Shift+F]"></label>
     <input id="wrap" checked type="checkbox">
     <label for="wrap" tabindex="0" title="Word wrap">w</label>
@@ -222,7 +222,7 @@ Loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
     <a href="https://github.com/eyaler/ediking" target="_blank" title="GitHub">&#x1f431;</a>
   </div>
   
-  <div id="textareas">
+  <div id="editor">
     <textarea id="code" autocomplete="off" autofocus oninput="update()">
 <!DOCTYPE html>
 <html lang="en">
@@ -267,7 +267,10 @@ Loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
     let active, writer, rewriter, controller, user_click, loop
     
     function get_url_param(param='disp') {
-      return +new URLSearchParams(location.search).get(param)
+      let val = new URLSearchParams(location.search).get(param)
+      if (isNaN(val))
+        return decodeURIComponent(val)
+      return +val
     }
     
     function safe_history_replace_state(url) {
@@ -308,6 +311,15 @@ Loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
         safe_history_replace_state('#' + encodeURIComponent(code.value))
     }
     
+    prom.addEventListener('input', () => {
+      const url = new URL(location)
+      if (!prom.value)
+        url.searchParams.delete('prompt')
+      else
+        url.searchParams.set('prompt', prom.value)
+      safe_history_replace_state(url)
+    })
+    
     iframe.addEventListener('load', () => {
       active?.focus()
       active = null
@@ -336,10 +348,12 @@ Loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
         safe_history_replace_state(url)
       }
       full.ariaExpanded = !full.checked
+      if (!full.checked && code.selectionStart < code.selectionEnd && code.selectionEnd - code.selectionStart < code.value.length)
+        code.focus()
     })
   
     function set_wrap() {
-      textareas.querySelectorAll('textarea').forEach(e => e.style.whiteSpace = wrap.checked ? 'pre-wrap' : 'pre')
+      editor.querySelectorAll('textarea').forEach(e => e.style.whiteSpace = wrap.checked ? 'pre-wrap' : 'pre')
     }
     
     wrap.addEventListener('change', () => set_wrap())
@@ -377,9 +391,11 @@ Loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
               rewriter = await Rewriter.create({...monitor_opt, ...shared_context})
             }
             if (writer && writer !== true && rewriter && rewriter !== true) {
-              prom.value = ''
+              prom.value = get_url_param('prompt') || ''
               prom.removeAttribute('readonly')
               run_stop.classList.remove('hide')
+              if (get_url_param('loop'))
+                run_stop_gen(true)
             }
           } catch (error) {
             if (writer === true && phase == 'writer')
@@ -402,6 +418,14 @@ Loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
         ai.click()
       loop = mod
       run_stop.classList.toggle('loop', loop)
+      
+      const url = new URL(location)
+      if (!loop)
+        url.searchParams.delete('loop')
+      else
+        url.searchParams.set('loop', 1)
+      safe_history_replace_state(url)
+      
       if (!run_stop.classList.contains('running')) {
         code.readOnly = true
         run_stop.classList.add('running')
@@ -440,19 +464,29 @@ Loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
             stream = await rewriter.rewriteStreaming(code_text, {context: prompt_text, ...abort_signal})
           for await (const chunk of stream) {
             resp += chunk
-            resp = resp.replace(/^```(html|css|javascript|js)\r?\n?/, '')
+            resp = resp.replace(/^```(html|css|javascript|js)?\r?\n?/, '')
             code.value = code_before + resp + code_after
+            if (partial) {
+              code.setSelectionRange(start, end + code.value.length - orig_len)
+              if (!full.checked)
+                code.focus()
+            }
           }
           code.value = code_before + resp.replace(/\r?\n?```$/, '') + code_after
-          update()
-          if (partial)
-            code.selectionEnd = end + code.value.length - orig_len
         } catch (error) {
-          if (error.name == 'QuotaExceededError')
+          if (error.name == 'QuotaExceededError') {
             alert(`Error: LLM input (code + prompt) is ${error.requested.toLocaleString()} tokens,\nbut model is limited to ${error.quota.toLocaleString()} tokens.`);
-          if (error.name != 'AbortError')
+            if (loop)
+              run_stop.click()
+          } else if (error.name != 'AbortError' && !loop)
             alert(error)
         }
+        if (partial) {
+          code.setSelectionRange(start, end + code.value.length - orig_len)
+          if (!full.checked)
+            code.focus()
+        }
+        update()
         run_stop.classList.remove('running')
         if (loop && !controller?.signal.aborted)
           run_stop_gen(true)
@@ -474,36 +508,50 @@ Loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
     }
     
     function open_files(files) {
-      let have
+      let have_code
+      let have_prompt
       ;[...files].forEach(file => {
         const reader = new FileReader()
         reader.onload = () => {
-          if (have)
-            code.value += '\n\n'
-          else
-            code.value = ''
           let content = reader.result
-          const indented = `\n\t\t${content.split('\n').join('\n\t\t')}\n\t`
-          if (file.name.endsWith('.css') || file.type == 'text/css')
-            content = `\t<style>${indented}</style>`
-          else if (file.name.endsWith('.js') || file.type == 'application/x-javascript')
-            content = `\t<script>${indented}<\/script>`
-          code.value += content
-          have = true
+          if (file.name.endsWith('.prompt')) {
+            if (!prom.readOnly) {
+              if (have_prompt)
+                prom.value += '\n\n'
+              else
+                prom.value = ''
+              prom.value += content
+              have_prompt = true
+              if (!ai.checked)
+                ai.click()
+            }
+          } else if (!code.readOnly) {
+            if (have_code)
+              code.value += '\n\n'
+            else
+              code.value = ''
+            const indented = `\n\t\t${content.split('\n').join('\n\t\t')}\n\t`
+            if (file.name.endsWith('.css') || file.type == 'text/css')
+              content = `\t<style>${indented}</style>`
+            else if (file.name.endsWith('.js') || file.type == 'application/x-javascript')
+              content = `\t<script>${indented}<\/script>`
+            code.value += content
+            have_code = true
+          }
           update()
         }
         reader.readAsText(file)
       })
     }
-    
-    document.body.addEventListener('dragover', e => {
+
+    editor.addEventListener('dragover', e => {
       if ([...e.dataTransfer.types].some(t => t == 'Files')) {
         e.preventDefault()
         e.dataTransfer.dropEffect = 'copy'
       }
     })
-    
-    document.body.addEventListener('drop', e => {
+
+    editor.addEventListener('drop', e => {
       const files = e.dataTransfer.files
       if (!files.length)
         return
@@ -552,7 +600,7 @@ Loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
       }
     }))
     
-    textareas.addEventListener('keydown', e => {
+    editor.addEventListener('keydown', e => {
       if (document.execCommand && (e.key == 'Enter' || e.key == 'Tab') && !e.altKey && !e.getModifierState?.('AltGraph') && !e.ctrlKey && !e.metaKey) {
         e.preventDefault()
         const textarea = e.target

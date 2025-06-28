@@ -8,13 +8,15 @@ Short link: [tfi.la/e](https://tfi.la/e)
 - Ctrl+Shift+Enter (or Ctrl+Click on the button) - Looping generation (when LLM is available)
 - Ctrl+S - Save as HTML file
 - Tab, Shift+Tab, Enter - Indentation at cursor location (not line-level but preserves undo stack)
-- Drag and drop file(s) - Open and add HTML tags for CSS and JS
+- Drag and drop file(s) over editor - Open and add HTML tags for CSS and JS, .prompt loaded to prompt (as raw text)
 
 ### URL API
-- Code is auto-saved in #hash
-- ?disp=1 - hide editor
-- ?disp=2 - hide editor, no show/hide button (keyboard shortcut still works)
-- ?disp=3 - hide editor, no show/hide button, no keyboard shortcut
+- Code is loaded and auto-saved in #hash
+- ?disp=1 - Hide editor
+- ?disp=2 - Hide editor, no show/hide button (keyboard shortcut still works)
+- ?disp=3 - Hide editor, no show/hide button, no keyboard shortcut
+- ?loop=1 - Looping generation (when LLM is available)
+- ?prompt=... - Prompt loaded and auto-saved
 
 ### iframe convenience features
 - Prevents iframe from stealing focus
@@ -43,6 +45,7 @@ Short link: [tfi.la/e](https://tfi.la/e)
   - Inline protected code regions (e.g. tests)
   - Automatic error capturing
   - Multimodal input of the rendered iframe screenshot
+  - Parse .prompt files
   - Autopilot mode - allow looping generation to also change the prompt (can currently be emulated via generated code comments)
 
 ### Fun
