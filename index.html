@@ -264,7 +264,7 @@ Loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
   <iframe id="iframe"></iframe>
   
   <script>
-    let active, writer, rewriter, controller, user_click, loop
+    let active_before_update, prom_active, writer, rewriter, controller, user_click, loop
     
     function get_url_param(param='disp') {
       let val = new URLSearchParams(location.search).get(param)
@@ -285,7 +285,7 @@ Loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
       if (hash != null) {
         const disp = get_url_param()
         if (disp) {
-          if (!full.checked) full.click()
+          full.click()
           if (disp == 2) controls.classList.add('conditional_hide')
           if (disp >= 3) controls.classList.add('hide')
         }
@@ -305,11 +305,14 @@ Loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
         else if (hash)
           code.value = decodeURIComponent(hash.slice(1))
       }
-      active = document.activeElement
+      active_before_update = document.activeElement
       iframe.srcdoc = code.value
       if (hash == null)
         safe_history_replace_state('#' + encodeURIComponent(code.value))
     }
+    
+    code.addEventListener('focus', () => prom_active = false)
+    prom.addEventListener('focus', () => prom_active = true)
     
     prom.addEventListener('input', () => {
       const url = new URL(location)
@@ -321,8 +324,7 @@ Loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
     })
     
     iframe.addEventListener('load', () => {
-      active?.focus()
-      active = null
+      active_before_update.focus()
       const title = iframe.contentDocument.title
       if (title)
         document.title = title
@@ -332,6 +334,13 @@ Loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
         if (a.origin != location.origin)
           a.target = '_blank'
       })
+      if (get_url_param() < 3)
+        iframe.contentDocument.addEventListener('keydown', e => {
+          if (!e.altKey && !e.getModifierState?.('AltGraph') && (e.ctrlKey || e.metaKey) && e.code == 'KeyF' && e.shiftKey && get_url_param() < 3) {
+            e.preventDefault()
+            full.click()
+          }
+        })
     })
     
     
@@ -348,8 +357,14 @@ Loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
         safe_history_replace_state(url)
       }
       full.ariaExpanded = !full.checked
-      if (!full.checked && code.selectionStart < code.selectionEnd && code.selectionEnd - code.selectionStart < code.value.length)
+      
+      if (full.checked) {
+        if (document.activeElement.tagName.toLowerCase() != 'label')
+          iframe.focus()
+      } else if (prom_active || prom.readOnly || code.selectionStart < code.selectionEnd && code.selectionEnd - code.selectionStart < code.value.length)
         code.focus()
+      else
+        prom.focus()
     })
   
     function set_wrap() {
@@ -365,10 +380,13 @@ Loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
     const fullcode_prompt = 'Output only a complete single-file HTML code (including CSS/JS inside). JS libraries can be used from CDN. NO external files!'
     
     function monitor(m) {
-      m.addEventListener('downloadprogress', e => {if (prom.readOnly) prom.value = `Downloading model... ${e.loaded * 100 | 0}%`})
+      m.addEventListener('downloadprogress', e => {
+        if (prom.readOnly)
+          prom.value = `Downloading model... ${e.loaded * 100 | 0}%`
+      })
     }
     
-    ai.addEventListener('click', e => user_click = e.isTrusted)
+    ai.addEventListener('click', e => user_click = user_click == null || e.isTrusted)
     
     ai.addEventListener('change', async () => {
       if (ai.checked) {
@@ -405,8 +423,7 @@ Loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
             alert(error)
             ai.checked = false
           }
-        }
-        if (user_click && !prom.readOnly)
+        } else if (user_click)
           prom.focus()
       } else
         code.focus()
@@ -463,8 +480,7 @@ Loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
           } else
             stream = await rewriter.rewriteStreaming(code_text, {context: prompt_text, ...abort_signal})
           for await (const chunk of stream) {
-            resp += chunk
-            resp = resp.replace(/^```(html|css|javascript|js)?\r?\n?/, '')
+            resp += chunk.replace(/^```.*$/gm, '')
             code.value = code_before + resp + code_after
             if (partial) {
               code.setSelectionRange(start, end + code.value.length - orig_len)
@@ -472,7 +488,6 @@ Loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
                 code.focus()
             }
           }
-          code.value = code_before + resp.replace(/\r?\n?```$/, '') + code_after
         } catch (error) {
           if (error.name == 'QuotaExceededError') {
             alert(`Error: LLM input (code + prompt) is ${error.requested.toLocaleString()} tokens,\nbut model is limited to ${error.quota.toLocaleString()} tokens.`);
@@ -522,8 +537,11 @@ Loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
                 prom.value = ''
               prom.value += content
               have_prompt = true
-              if (!ai.checked)
+              if (!ai.checked) {
+                user_click = null
                 ai.click()
+              } else
+                prom.focus()
             }
           } else if (!code.readOnly) {
             if (have_code)
@@ -537,6 +555,7 @@ Loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
               content = `\t<script>${indented}<\/script>`
             code.value += content
             have_code = true
+            code.focus()
           }
           update()
         }

@@ -19,8 +19,9 @@ Short link: [tfi.la/e](https://tfi.la/e)
 - ?prompt=... - Prompt loaded and auto-saved
 
 ### iframe convenience features
-- Prevents iframe from stealing focus
-- Adds `target="_blank"` to `a` links of different origin, to allow opening from iframe
+- Prevent iframe from stealing focus on load
+- Have iframe listen to keyboard shortcut to show code
+- Add `target="_blank"` to `a` links of different origin, to allow opening from iframe
 - Grab title and favicon from iframe
 
 ### Experimental Writer / Rewriter Chrome API integration
