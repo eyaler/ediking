@@ -362,10 +362,10 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
       if (full.checked) {
         if (document.activeElement.tagName.toLowerCase() != 'label')
           iframe.focus()
-      } else if (prom_active || prom.readOnly || code.selectionStart < code.selectionEnd && code.selectionEnd - code.selectionStart < code.value.length)
-        code.focus()
-      else
+      } else if (prom_active && !prom.readOnly)
         prom.focus()
+      else
+        code.focus()
     })
   
     function set_wrap() {
@@ -506,14 +506,11 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
           for await (const chunk of stream) {
             resp += chunk
             code.value = close_comment(code_before) + close_comment(resp.replace(/\r?\n?```[^\r\n]*\r?\n?/g, '')) + code_after
-            if (partial || finish_start) {
+            if (partial || finish_start)
               code.setSelectionRange(start, end + code.value.length - orig_len)
-              if (!full.checked)
-                code.focus()
-            }
           }
           if (!code.value.includes('</html>') && (!code_text || !partial))
-            await generate(null, start)
+            await generate(null, partial || finish_start ? start : 0)
         } catch (error) {
           if (error.name == 'QuotaExceededError') {
             alert(`Error: LLM input (code + prompt) is ${error.requested.toLocaleString()} tokens,\nbut model is limited to ${error.quota.toLocaleString()} tokens.`);
@@ -522,11 +519,8 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
           } else if (error.name != 'AbortError' && !loop)
             alert(error)
         }
-        if (partial) {
+        if (partial || finish_start)
           code.setSelectionRange(start, end + code.value.length - orig_len)
-          if (!full.checked)
-            code.focus()
-        }
         update()
         run_stop.classList.remove('running')
         if (loop && !controller?.signal.aborted)
