@@ -211,8 +211,8 @@
     <label for="wrap" tabindex="0" title="Word wrap">w</label>
     <input id="ai" autocomplete="off" type="checkbox" aria-controls="prom" aria-expanded="false">
     <label for="ai" tabindex="0" title="Toggle AI">&#x1f916;</label>
-    <button id="run_stop" onclick="run_stop_gen(event.ctrlKey || event.metaKey || event.button == 1)" aria-keyshortcuts="Ctrl+Enter Ctrl+Shift+Enter" title="Run/stop generation [Ctrl+Enter]
-Loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
+    <button id="run_stop" onclick="generate(event.ctrlKey || event.metaKey || event.button == 1)" aria-keyshortcuts="Ctrl+Enter Ctrl+Shift+Enter" title="Run/stop generation [Ctrl+Enter]
+Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
     <button onclick="update()" title="Reload iframe">&#x27f3;</button>
     <button onclick="new_editor(event)" title="New">&#x1f195;</button>
     <input id="open_button" autocomplete="off" multiple type="file">
@@ -264,7 +264,8 @@ Loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
   <iframe id="iframe"></iframe>
   
   <script>
-    let active_before_update, prom_active, writer, rewriter, controller, user_click, loop
+    const chars_to_tokens = 2.5
+    let active_before_update, prom_active, writer, rewriter, controller, user_click, loop, prev_code
     
     function get_url_param(param='disp') {
       let val = new URLSearchParams(location.search).get(param)
@@ -376,7 +377,7 @@ Loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
     
     
     // LLM stuff
-    const shared_context = {sharedContext: 'Make sure to address comments marked: FIXME, and edit to comments to show: FIXED'}
+    const shared_context = {sharedContext: 'Address any comments marked by FIXME, and remove them'}
     const fullcode_prompt = 'Output only a complete single-file HTML code (including CSS/JS inside). JS libraries can be used from CDN. NO external files!'
     
     function monitor(m) {
@@ -413,7 +414,7 @@ Loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
               prom.removeAttribute('readonly')
               run_stop.classList.remove('hide')
               if (get_url_param('loop'))
-                run_stop_gen(true)
+                generate(true)
             }
           } catch (error) {
             if (writer === true && phase == 'writer')
@@ -430,10 +431,18 @@ Loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
       ai.ariaExpanded = ai.checked
     })
   
-    async function run_stop_gen(mod) {
+    function close_comment(s) {
+      return s.replace(/(?<!:)(\/\/[^\r\n]*)$/, '$1\n')
+    }
+    
+    async function generate(mod=null, finish_start=null) {
       if (!ai.checked)
         ai.click()
-      loop = mod
+      
+      if (!loop && mod)
+        loop = true
+      else if (mod != null)
+        loop = false
       run_stop.classList.toggle('loop', loop)
       
       const url = new URL(location)
@@ -443,7 +452,7 @@ Loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
         url.searchParams.set('loop', 1)
       safe_history_replace_state(url)
       
-      if (!run_stop.classList.contains('running')) {
+      if (!run_stop.classList.contains('running') || finish_start != null) {
         code.readOnly = true
         run_stop.classList.add('running')
         
@@ -453,41 +462,58 @@ Loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
         let code_text = code.value
         let prompt_text = prom.value.trim()
         
-        const start = code.selectionStart
-        const end = code.selectionEnd
+        let start = code.selectionStart
+        let end = code.selectionEnd
         const orig_len = code_text.length
         const partial = start < end && end - start < orig_len
         const selection = code.value.slice(start, end).trim()
         
         let code_before = ''
         let code_after = ''
-        if (partial) {
+        if (finish_start != null) {
+          code_before = code_text
+          code_text = ''
+          start = finish_start
+          end = orig_len
+        } else if (partial) {
           code_before = code_text.slice(0, start)
           code_after = code_text.slice(end)
           code_text = selection
         } else
           prompt_text = fullcode_prompt + '\n\n' + prompt_text
         code_text = code_text.trim()
-                
+        
         let stream
         let resp = ''
         
         try {
           if (!code_text) {
-            if (partial)
-              prompt_text = code_before.replaceAll('FIXME', '').trim() + '\n[COMPLETE MISSING CODE HERE - ONLY OUTPUT THIS PART]\n' + code_after.replaceAll('FIXME', '').trim() + '\n\n' + prompt_text
+            if (partial || finish_start != null) {
+              let before_context = code_before.replaceAll('FIXME', '').trim()
+              let after_context = code_after.replaceAll('FIXME', '').trim()
+              let code_context = '\n<!--COMPLETE MISSING CODE HERE AND OUTPUT ONLY THIS PART-->\n'
+              prompt_text += '\n\nCURRENT CODE:\n\n'
+              while (before_context + after_context && (shared_context + prompt_text + code_context).length < writer.inputQuota * chars_to_tokens) {
+                code_context = before_context.slice(-1) + code_context + after_context[0]
+                before_context = before_context.slice(0, -1)
+                after_context = after_context.slice(1)
+              }
+              prompt_text += code_context
+            }
             stream = await writer.writeStreaming(prompt_text, abort_signal)
           } else
             stream = await rewriter.rewriteStreaming(code_text, {context: prompt_text, ...abort_signal})
           for await (const chunk of stream) {
-            resp += chunk.replace(/^```.*$/gm, '')
-            code.value = code_before + resp + code_after
-            if (partial) {
+            resp += chunk
+            code.value = close_comment(code_before) + close_comment(resp.replace(/\r?\n?```[^\r\n]*\r?\n?/g, '')) + code_after
+            if (partial || finish_start) {
               code.setSelectionRange(start, end + code.value.length - orig_len)
               if (!full.checked)
                 code.focus()
             }
           }
+          if (!code.value.includes('</html>') && (!code_text || !partial))
+            await generate(null, start)
         } catch (error) {
           if (error.name == 'QuotaExceededError') {
             alert(`Error: LLM input (code + prompt) is ${error.requested.toLocaleString()} tokens,\nbut model is limited to ${error.quota.toLocaleString()} tokens.`);
@@ -504,10 +530,10 @@ Loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
         update()
         run_stop.classList.remove('running')
         if (loop && !controller?.signal.aborted)
-          run_stop_gen(true)
+          generate()
         else
           code.removeAttribute('readonly')
-      } else if (!loop)
+      } else if (!mod)
         controller.abort()
     }
     
@@ -515,7 +541,7 @@ Loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
     // New, open, save, share
     
     function new_editor(e) {
-      url = location.pathname + location.search
+      url = location.pathname
       if (e.ctrlKey || e.metaKey || e.button == 1)
         window.open(url, '_blank')
       else
@@ -581,7 +607,7 @@ Loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
     open_button.addEventListener('change', e => open_files(e.currentTarget.files))
     
     function save() {
-      const file = new Blob([code.value], {type: 'text/html'})
+      const file = new Blob([iframe.srcdoc], {type: 'text/html'})
       const a = document.createElement('a')
       a.href = URL.createObjectURL(file)
       a.download = 'index.html'
@@ -606,7 +632,7 @@ Loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
         if (e.code == 'KeyF')
           full.click()
         else if (e.key == 'Enter')
-          run_stop_gen(e.shiftKey)
+          generate(e.shiftKey)
         else if (e.code == 'KeyS')
           save()
       }
