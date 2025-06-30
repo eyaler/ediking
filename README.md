@@ -27,7 +27,8 @@ Short link: [tfi.la/e](https://tfi.la/e)
 
 ### Experimental Writer / Rewriter Chrome API integration
 - Requires Chrome Desktop 138+, 22 GB disk space, and 4 GB GPU (see: https://developer.chrome.com/docs/ai/writer-api)
-- LLM patterns:
+- API explainer: https://github.com/webmachinelearning/writing-assistance-apis
+- LLM patterns used here:
   1. __No code__ -> `write(fullcode_prompt + prompt)`
   2. __Code + no/full selection__ -> `rewrite(code, {context: fullcode_prompt + prompt})`
   3. __Code + selected* whitespace__ -> `code_before SAFE+ write(truncate_to_quota(prompt + 'CURRENT CODE:' + code_before + '<!--COMPLETE MISSING CODE HERE AND OUTPUT ONLY THIS PART-->' + code_after)) SAFE+ code_after`
