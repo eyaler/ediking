@@ -43,7 +43,7 @@ Short link: [tfi.la/e](https://tfi.la/e)
   - Not enough disk space - https://issues.chromium.org/issues/427535092
   - After aborting the next generation is delayed
 - Future opportunities:
-  - Code completion
+  - Tab completions
   - Inline protected code regions (e.g. tests)
   - Automatic error capturing
   - Multimodal input of the rendered iframe screenshot
