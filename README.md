@@ -29,14 +29,14 @@ Short link: [tfi.la/e](https://tfi.la/e)
 - Requires Chrome Desktop 138+, 22 GB disk space, and 4 GB GPU (see: https://developer.chrome.com/docs/ai/writer-api)
 - API explainer: https://github.com/webmachinelearning/writing-assistance-apis
 - LLM patterns used here:
-  1. __No code__ -> `write(fullcode_prompt + prompt)`
-  2. __Code + no/full selection__ -> `rewrite(code, {context: fullcode_prompt + prompt})`
-  3. __Code + selected* whitespace__ -> `code_before SAFE+ write(truncate_to_quota(prompt + 'CURRENT CODE:' + code_before + '<!--COMPLETE MISSING CODE HERE AND OUTPUT ONLY THIS PART-->' + code_after)) SAFE+ code_after`
-  4. __Code + selected* code__ -> `code_before SAFE+ rewrite(selected_code, {context: prompt}) SAFE+ code_after`
-  5. For all the above - if the final code has no closing `</html>` tag, and there is either no selection or no code after the selection, then iterate using pattern iii with `code_before = code`
+  1. __Write from scratch__: no code -> `write(fullcode_prompt + prompt)`
+  2. __Full rewrite__: code + no/full selection -> `rewrite(code, {context: fullcode_prompt + prompt})`
+  3. __Complete missing code__: code + selected* whitespace -> `code_before SAFE+ write(truncate_to_quota(prompt + 'CURRENT CODE:' + code_before + '<!--COMPLETE MISSING CODE HERE AND OUTPUT ONLY THIS PART-->' + code_after)) SAFE+ code_after` (does not change surrounding code, model sees it and might duplicate it)
+  4. __Partial rewrite__: code + selected* code -> `code_before SAFE+ rewrite(selected_code, {context: prompt}) SAFE+ code_after` (does not change surrounding code, but the model does not see it to prevent confusion)
+  5. __Finish HTML__: for all the above, if the final code has no closing `</html>` tag, and there is either no selection or no code after the selection, then iterate using the __complete missing code__ pattern with `code_before = code`
   - __sharedContext__ = `'Never use external files or remote media! Address any comments marked by FIXME, and remove them.'` (always applied)
   - __fullcode_prompt__ = `'Output only a complete single-file HTML code (including CSS/JS inside). Popular JS libraries can be used from CDN.'`
-  - __SAFE+__ = Trailing single-line `//` JS comments are closed with newline before concatenation
+  - __SAFE+__ = trailing single-line `//` JS comments are closed with newline before concatenation
   - __*__ Selection in code editor is not visible while editing the prompt or other elements are focused
 - Known API issues:
   - Broken model download - https://issues.chromium.org/issues/427520275
