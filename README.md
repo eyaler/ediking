@@ -15,8 +15,9 @@ Short link: [tfi.la/e](https://tfi.la/e)
 - `?disp=1` - Hide editor
 - `?disp=2` - Hide editor, no show/hide button (keyboard shortcut still works)
 - `?disp=3` - Hide editor, no show/hide button, no keyboard shortcut
-- `?loop=1` - Looping generation (when LLM is available)
 - `?prompt=...` - Prompt (when LLM is available)
+- `?loop=1` - Looping generation (when LLM is available)
+- `?noai=1` - Disable LLM (aka student mode)
 
 ### iframe convenience features
 - Prevent iframe from stealing focus on load
@@ -27,15 +28,15 @@ Short link: [tfi.la/e](https://tfi.la/e)
 ### Experimental Writer / Rewriter Chrome API integration
 - Requires Chrome Desktop 138+, 22 GB disk space, and 4 GB GPU (see: https://developer.chrome.com/docs/ai/writer-api)
 - LLM patterns:
-  1. __No code__ -> `write(fullcode_prompt + prompt)` -> `finish_html()`
-  2. __Code + no selection__ -> `rewrite(code, {context: fullcode_prompt + prompt})` -> `finish_html()`
-  3. __Code + selected* whitespace__ -> `code_before SAFE+ write(truncate_to_quota(prompt + 'CURRENT CODE:' + code_before + '<!--COMPLETE MISSING CODE HERE AND OUTPUT ONLY THIS PART-->' + code_after)) SAFE+ code_after` -> `finish_html()`
+  1. __No code__ -> `write(fullcode_prompt + prompt)`
+  2. __Code + no/full selection__ -> `rewrite(code, {context: fullcode_prompt + prompt})`
+  3. __Code + selected* whitespace__ -> `code_before SAFE+ write(truncate_to_quota(prompt + 'CURRENT CODE:' + code_before + '<!--COMPLETE MISSING CODE HERE AND OUTPUT ONLY THIS PART-->' + code_after)) SAFE+ code_after`
   4. __Code + selected* code__ -> `code_before SAFE+ rewrite(selected_code, {context: prompt}) SAFE+ code_after`
+  5. For all the above - if the final code has no closing `</html>` tag, and there is either no selection or no code after the selection, then iterate using pattern iii with `code_before = code`
   - __sharedContext__ = `'Address any comment marked by FIXME, and remove them'` (always applied)
   - __fullcode_prompt__ = `'Output only a complete single-file HTML code (including CSS/JS inside). JS libraries can be used from CDN. NO external files!'`
-  - __finish_html()__ = If the output does not include `</html>`, iterate using pattern iii with `code_before = code`
-  - __SAFE+__ = Trailing single-line JS comments `//` are closed with newline before concatenation
-  - __*__ Code selection is not visible while editing the prompt
+  - __SAFE+__ = Trailing single-line `//` JS comments are closed with newline before concatenation
+  - __*__ Selection in code editor is not visible while editing the prompt or other elements are focused
 - Known API issues:
   - Broken model download - https://issues.chromium.org/issues/427520275
   - Not enough disk space - https://issues.chromium.org/issues/427535092

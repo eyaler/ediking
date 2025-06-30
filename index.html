@@ -290,12 +290,17 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
           if (disp == 2) controls.classList.add('conditional_hide')
           if (disp >= 3) controls.classList.add('hide')
         }
-        if (!self.Writer || !self.Rewriter) {
+        const noai = get_url_param('noai')
+        if (!self.Writer || !self.Rewriter || noai) {
           ai.disabled = true
           const label = ai.nextElementSibling
-          label.role = 'link'
-          label.onclick = () => open('https://developer.chrome.com/docs/ai/writer-api', '_blank')
-          label.title = 'Writer/Rewriter APIs not supported\nClick for details!'
+          if (noai)
+            label.classList.add('hide')
+          else {
+            label.role = 'link'
+            label.onclick = () => open('https://developer.chrome.com/docs/ai/writer-api', '_blank')
+            label.title = 'Writer/Rewriter APIs not supported\nClick for details!'
+          }
         } else if (!ai.checked)
           (async () => {
             if (await Writer.availability() == 'available' && await Rewriter.availability() == 'available') 
@@ -465,40 +470,44 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
         let start = code.selectionStart
         let end = code.selectionEnd
         const orig_len = code_text.length
-        const partial = start < end && end - start < orig_len
+        const trimmed = code_text.trim()
+        const partial = start < end && end - start < trimmed.length || finish_start != null && trimmed
         const selection = code.value.slice(start, end).trim()
         
         let code_before = ''
         let code_after = ''
-        if (finish_start != null) {
-          code_before = code_text
-          code_text = ''
-          start = finish_start
-          end = orig_len
-        } else if (partial) {
-          code_before = code_text.slice(0, start)
-          code_after = code_text.slice(end)
-          code_text = selection
-        } else
+        if (partial) {
+          if (finish_start != null) {
+            code_before = code_text
+            code_text = ''
+            start = finish_start
+            end = orig_len
+          } else {
+            code_before = code_text.slice(0, start)
+            code_after = code_text.slice(end)
+            code_text = selection
+          }
+        } else {
           prompt_text = fullcode_prompt + '\n\n' + prompt_text
-        code_text = code_text.trim()
+          code_text = trimmed
+        }
         
         let stream
         let resp = ''
         
         try {
           if (!code_text) {
-            if (partial || finish_start != null) {
-              let before_context = code_before.replaceAll('FIXME', '').trim()
-              let after_context = code_after.replaceAll('FIXME', '').trim()
+            if (partial) {
+              let before_context = code_before.trim()
+              let after_context = code_after.trim()
               let code_context = '\n<!--COMPLETE MISSING CODE HERE AND OUTPUT ONLY THIS PART-->\n'
               prompt_text += '\n\nCURRENT CODE:\n\n'
-              while (before_context + after_context && (shared_context + prompt_text + code_context).length < writer.inputQuota * chars_to_tokens) {
+              while ((before_context || after_context) && (shared_context + prompt_text + code_context).length < writer.inputQuota * chars_to_tokens) {
                 code_context = before_context.slice(-1) + code_context + after_context[0]
                 before_context = before_context.slice(0, -1)
                 after_context = after_context.slice(1)
               }
-              prompt_text += code_context
+              prompt_text += code_context.replaceAll('FIXME', '')
             }
             stream = await writer.writeStreaming(prompt_text, abort_signal)
           } else
@@ -506,11 +515,11 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
           for await (const chunk of stream) {
             resp += chunk
             code.value = close_comment(code_before) + close_comment(resp.replace(/\r?\n?```[^\r\n]*\r?\n?/g, '')) + code_after
-            if (partial || finish_start)
+            if (start < end)
               code.setSelectionRange(start, end + code.value.length - orig_len)
           }
-          if (!code.value.includes('</html>') && (!code_text || !partial))
-            await generate(null, partial || finish_start ? start : 0)
+          if (!code.value.includes('</html>') && !code_after.trim())
+            await generate(null, start * partial)
         } catch (error) {
           if (error.name == 'QuotaExceededError') {
             alert(`Error: LLM input (code + prompt) is ${error.requested.toLocaleString()} tokens,\nbut model is limited to ${error.quota.toLocaleString()} tokens.`);
@@ -519,7 +528,7 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
           } else if (error.name != 'AbortError' && !loop)
             alert(error)
         }
-        if (partial || finish_start)
+        if (start < end)
           code.setSelectionRange(start, end + code.value.length - orig_len)
         update()
         run_stop.classList.remove('running')
