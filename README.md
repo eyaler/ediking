@@ -51,5 +51,5 @@ Short link: [tfi.la/e](https://tfi.la/e)
   - Allow LLM to generate its next prompt (can currently be emulated via generated code comments)
 
 ### Fun
-- Recursion: [tfi.la/e#recur](https://tfi.la/e/#recur)
+- Recursion: [tfi.la/e#recur](https://tfi.la/e#recur)
 - Alien translation airlock: https://tfi.la/e?loop=1&prompt=Communicate+with+the+aliens+using+text%2C+shapes+and+colors.+Change+the+prevoius+message+and+make+it+even+more+psychedelic%21#%3C!DOCTYPE%20html%3E%0A%3Chtml%20lang%3D%22en%22%3E%0A%3Cbody%3E%0A%3Ch1%3EMessage%20to%20the%20aliens...%3C%2Fh1%3E%0A%3C%2Fbody%3E%0A%3C%2Fhtml%3E (when LLM is available)
