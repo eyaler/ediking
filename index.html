@@ -274,23 +274,16 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
       return +val
     }
     
-    function set_history_state(url, push) {
+    function set_history_state(url) {
       try {
-        if (push)
-          history.pushState(history.state, '', url)
-        else
-          history.replaceState(history.state, '', url)
+        history.replaceState(history.state, '', url)
       } catch {
-        if (push)
-          location.assign(url)
-        else
-          location.replace(url)
+        location.replace(url)
       }
     }
     
     function update(hash=null) {
       if (hash != null) {
-        set_history_state(location, true)
         const disp = get_url_param()
         if (disp) {
           full.click()
