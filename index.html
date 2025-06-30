@@ -492,6 +492,7 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
           code_text = trimmed
         }
         
+        const save_code = code.value
         let stream
         let resp = ''
         
@@ -512,7 +513,6 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
             stream = await writer.writeStreaming(prompt_text, abort_signal)
           } else
             stream = await rewriter.rewriteStreaming(code_text, {context: prompt_text, ...abort_signal})
-          const save_code = code.value
           for await (const chunk of stream) {
             resp += chunk
             code.value = close_comment(code_before) + close_comment(resp.replace(/\r?\n?```[^\r\n]*\r?\n?/g, '')) + code_after
