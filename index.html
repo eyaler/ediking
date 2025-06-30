@@ -290,7 +290,7 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
           if (disp == 2) controls.classList.add('conditional_hide')
           if (disp >= 3) controls.classList.add('hide')
         }
-        const noai = get_url_param('noai')
+        const noai = get_url_param('noai') || hash == '#recur'
         if (!self.Writer || !self.Rewriter || noai) {
           ai.disabled = true
           const label = ai.nextElementSibling
@@ -307,7 +307,7 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
               ai.click()
           })()
         if (hash == '#recur')
-          code.value = document.documentElement.outerHTML.replace("'#recur'", 'hash')
+          code.value = document.documentElement.outerHTML.replaceAll("'#recur'", 'hash')
         else if (hash)
           code.value = decodeURIComponent(hash.slice(1))
       }
