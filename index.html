@@ -261,10 +261,9 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
     <textarea id="prom" autocomplete="off" placeholder="Prompt here." rows="1"></textarea>
   </div>
   
-  <iframe id="iframe"></iframe>
-  
   <script>
     const chars_to_tokens = 2.5
+    const iframe = document.createElement('iframe')  // Add iframe dynamically to avoid empty iframe on navigation in Firefox
     let active_before_update, prom_active, writer, rewriter, controller, user_click, loop, prev_code
     
     function get_url_param(param='disp') {
@@ -313,6 +312,7 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
       }
       active_before_update = document.activeElement
       iframe.srcdoc = code.value
+      editor.after(iframe)
       if (hash == null)
         set_history_state('#' + encodeURIComponent(code.value))
     }
