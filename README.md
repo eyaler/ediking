@@ -33,8 +33,8 @@ Short link: [tfi.la/e](https://tfi.la/e)
   3. __Code + selected* whitespace__ -> `code_before SAFE+ write(truncate_to_quota(prompt + 'CURRENT CODE:' + code_before + '<!--COMPLETE MISSING CODE HERE AND OUTPUT ONLY THIS PART-->' + code_after)) SAFE+ code_after`
   4. __Code + selected* code__ -> `code_before SAFE+ rewrite(selected_code, {context: prompt}) SAFE+ code_after`
   5. For all the above - if the final code has no closing `</html>` tag, and there is either no selection or no code after the selection, then iterate using pattern iii with `code_before = code`
-  - __sharedContext__ = `'Address any comment marked by FIXME, and remove them'` (always applied)
-  - __fullcode_prompt__ = `'Output only a complete single-file HTML code (including CSS/JS inside). JS libraries can be used from CDN. NO external files!'`
+  - __sharedContext__ = `'Never use external files or remote media! Address any comments marked by FIXME, and remove them.'` (always applied)
+  - __fullcode_prompt__ = `'Output only a complete single-file HTML code (including CSS/JS inside). Popular JS libraries can be used from CDN.'`
   - __SAFE+__ = Trailing single-line `//` JS comments are closed with newline before concatenation
   - __*__ Selection in code editor is not visible while editing the prompt or other elements are focused
 - Known API issues:

@@ -218,7 +218,7 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
     <input id="open_button" autocomplete="off" multiple type="file">
     <label for="open_button" tabindex="0" title="Open file(s)">&#x1f4c2;&#xfe0e;</label>
     <button onclick="save()" aria-keyshortcuts="Ctrl+S" title="Save file [Ctrl+S]">&#x1f4be;&#xfe0e;</button>
-    <button id="share_button" onclick="share()" title="Share">&#x1f517;</button>
+    <button id="share_button" onclick="share(event.ctrlKey || event.metaKey || event.button == 1)" title="Share (or [Ctrl+Click] to copy sharable link)">&#x1f517;</button>
     <a href="https://github.com/eyaler/ediking" target="_blank" title="GitHub">&#x1f431;</a>
   </div>
   
@@ -382,8 +382,8 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
     
     
     // LLM stuff
-    const shared_context = {sharedContext: 'Address any comments marked by FIXME, and remove them'}
-    const fullcode_prompt = 'Output only a complete single-file HTML code (including CSS/JS inside). JS libraries can be used from CDN. NO external files!'
+    const shared_context = {sharedContext: 'Never use external files or remote media! Address any comments marked by FIXME, and remove them.'}
+    const fullcode_prompt = 'Output only a complete single-file HTML code (including CSS/JS inside). Popular JS libraries can be used from CDN.'
     
     function monitor(m) {
       m.addEventListener('downloadprogress', e => {
@@ -621,8 +621,8 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
       share_button.title = 'Copy shareable link'
     }
     
-    function share() {
-        navigator.share?.({url: location.href}).catch(() => {}) ?? navigator.clipboard.writeText(location.href)
+    function share(mod) {
+        (!mod && navigator.share?.({url: location.href}).catch(() => {})) || navigator.clipboard.writeText(location.href)
     }
 
 
