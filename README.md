@@ -31,7 +31,7 @@ Short link: [tfi.la/e](https://tfi.la/e)
 - LLM patterns used here:
   1. __Write from scratch__: no code -> `write(fullcode_prompt + prompt)`
   2. __Full rewrite__: code + no/full selection -> `rewrite(code, {context: fullcode_prompt + prompt})`
-  3. __Complete missing code__: code + selected* whitespace -> `code_before SAFE+ write(truncate_to_quota(prompt + 'CURRENT CODE:' + code_before + '<!--COMPLETE MISSING CODE HERE AND OUTPUT ONLY THIS PART-->' + code_after)) SAFE+ code_after` (does not change surrounding code, model sees it and might duplicate it)
+  3. __Complete missing code__: code + selected* whitespace -> `code_before SAFE+ write(truncate_to_quota(prompt + 'CURRENT CODE:' + code_before + '<!--COMPLETE MISSING CODE HERE AND OUTPUT ONLY THIS PART-->' + code_after)) SAFE+ code_after` (does not change surrounding code, model sees it and may duplicate it)
   4. __Partial rewrite__: code + selected* code -> `code_before SAFE+ rewrite(selected_code, {context: prompt}) SAFE+ code_after` (does not change surrounding code, but the model does not see it to prevent confusion)
   5. __Finish HTML__: for all the above, if the final code has no closing `</html>` tag, and there is either no selection or no code after the selection, then iterate using the __complete missing code__ pattern with `code_before = code`
   - __sharedContext__ = `'Never use external files or remote media! Address any comments marked by FIXME, and remove them.'` (always applied)
@@ -41,6 +41,7 @@ Short link: [tfi.la/e](https://tfi.la/e)
 - Known API issues:
   - Broken model download - https://issues.chromium.org/issues/427520275
   - Not enough disk space - https://issues.chromium.org/issues/427535092
+  - Page reload may crash Chrome - https://issues.chromium.org/issues/428688095
   - After aborting the next generation is delayed
 - Future opportunities:
   - Tab completions
