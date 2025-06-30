@@ -274,16 +274,23 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
       return +val
     }
     
-    function safe_history_replace_state(url) {
+    function set_history_state(url, push) {
       try {
-        history.replaceState(history.state, '', url)
+        if (push)
+          history.pushState(history.state, '', url)
+        else
+          history.replaceState(history.state, '', url)
       } catch {
-        location.replace(url)
+        if (push)
+          location.assign(url)
+        else
+          location.replace(url)
       }
     }
     
     function update(hash=null) {
       if (hash != null) {
+        set_history_state(location, true)
         const disp = get_url_param()
         if (disp) {
           full.click()
@@ -314,7 +321,7 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
       active_before_update = document.activeElement
       iframe.srcdoc = code.value
       if (hash == null)
-        safe_history_replace_state('#' + encodeURIComponent(code.value))
+        set_history_state('#' + encodeURIComponent(code.value))
     }
     
     code.addEventListener('focus', () => prom_active = false)
@@ -326,11 +333,11 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
         url.searchParams.delete('prompt')
       else
         url.searchParams.set('prompt', prom.value)
-      safe_history_replace_state(url)
+      set_history_state(url)
     })
     
     iframe.addEventListener('load', () => {
-      active_before_update.focus()
+      active_before_update?.focus()
       const title = iframe.contentDocument.title
       if (title)
         document.title = title
@@ -360,7 +367,7 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
           url.searchParams.delete('disp')
         else
           url.searchParams.set('disp', 1)
-        safe_history_replace_state(url)
+        set_history_state(url)
       }
       full.ariaExpanded = !full.checked
       
@@ -455,7 +462,7 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
         url.searchParams.delete('loop')
       else
         url.searchParams.set('loop', 1)
-      safe_history_replace_state(url)
+      set_history_state(url)
       
       if (!run_stop.classList.contains('running') || finish_start != null) {
         code.readOnly = true
