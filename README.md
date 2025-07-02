@@ -48,6 +48,7 @@ Short link: [tfi.la/e](https://tfi.la/e)
   - Broken model download - https://issues.chromium.org/issues/427520275
   - Not enough disk space - https://issues.chromium.org/issues/427535092
   - Page reload may crash Chrome - https://issues.chromium.org/issues/428688095
+  - Wrong model availability on Chrome launch - https://issues.chromium.org/issues/429183223
   - After aborting the next generation is delayed
 - Future opportunities:
   - Tab completions

@@ -223,7 +223,7 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
   </div>
   
   <div id="editor">
-    <textarea id="code" autocomplete="off" autofocus oninput="update()">
+    <textarea id="code" autocomplete="off" autofocus placeholder="Code here." oninput="update()">
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -272,7 +272,7 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
 	</div>
 	<div style="background-color: #ffbb00; color: black;">
         <p>You can edit the code on the left.</p>
-        <p>If you got <b>Chrome desktop 138+</b>, <b>22 GB disk space</b>, and <b>4 GB GPU</b>... you can use the built-in <b>Gemini Nano LLM</b> to write and edit code. Autopilot mode included.</p>
+        <p>If you got <b>Chrome desktop 138+</b>, <b>22 GB disk space</b>, and <b>4 GB GPU</b>... you can use the built-in <b>Gemini Nano LLM</b> to write and edit code. Autovibe mode included.</p>
         <p>By the way, everything here is client-side.</p>
 	</div>
 	<div style="background-color: blue; color: #00ff00;">
@@ -287,9 +287,9 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
   </div>
   
   <script>
-    const chars_to_tokens = 2.5
+    let active_before_update, prom_active, writer, rewriter, controller, user_click, loop
+    
     const iframe = document.createElement('iframe')  // Add iframe dynamically to avoid empty iframe on navigation in Firefox
-    let active_before_update, prom_active, writer, rewriter, controller, user_click, loop, prev_code
     
     function get_url_param(param='disp') {
       let val = new URLSearchParams(location.search).get(param)
@@ -326,10 +326,7 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
             label.title = 'Writer/Rewriter APIs not supported\nClick for details!'
           }
         } else if (!ai.checked)
-          (async () => {
-            if (await Writer.availability() == 'available' && await Rewriter.availability() == 'available') 
-              ai.click()
-          })()
+          check_model()
         if (hash == '#recur')
           code.value = document.documentElement.outerHTML.replaceAll("'#recur'", 'hash')
         else if (hash)
@@ -406,8 +403,16 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
     
     
     // LLM stuff
+    const chars_to_tokens = 2.5
     const shared_context = {sharedContext: 'Never use external files or remote media! Address any comments marked by FIXME, and remove them.'}
     const fullcode_prompt = 'Output only a complete single-file HTML code (including CSS/JS inside). Popular JS libraries can be used from CDN.'
+    
+    async function check_model(recheck) {
+      if (await Writer.availability() == 'available' && await Rewriter.availability() == 'available') 
+        ai.click()
+      else if (!recheck)
+        setTimeout(check_model, 5000, true)  // Delay to deal with https://issues.chromium.org/issues/429183223
+    }
     
     function monitor(m) {
       m.addEventListener('downloadprogress', e => {
