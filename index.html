@@ -408,7 +408,7 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
     const fullcode_prompt = 'Output only a complete single-file HTML code (including CSS/JS inside). Popular JS libraries can be used from CDN.'
     
     async function check_model(recheck) {
-      if (await Writer.availability() == 'available' && await Rewriter.availability() == 'available') 
+      if (await Writer.availability() == 'available' && await Rewriter.availability() == 'available')
         ai.click()
       else if (!recheck)
         setTimeout(check_model, 5000, true)  // Delay to deal with https://issues.chromium.org/issues/429183223
