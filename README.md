@@ -26,7 +26,6 @@ Short link: [tfi.la/e](https://tfi.la/e)
 - Grab title and favicon from iframe
 
 ### Things I may to add
-- Traversable edit history (especially for looping generation)
 - Direct editing of the iframe (aka designMode) reflected in the code editor
 - Use GUN.js or Nostr for persistence and collaborative editing
 - Syntax highlighting and other code editor niceties

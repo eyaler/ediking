@@ -203,7 +203,7 @@
     }
   </style>
 </head>
-<body onload="update(location.hash)">
+<body onload="update(location.hash)" onpopstate="update(location.hash)">
   <div id="controls">
     <input id="full" autocomplete="off" type="checkbox" aria-controls="editor" aria-expanded="true" aria-keyshortcuts="Ctrl+Shift+F">
     <label for="full" tabindex="0" title="Show/hide editor [Ctrl+Shift+F]"></label>
@@ -298,12 +298,13 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
       return +val
     }
     
-    function set_history_state(url) {
+    function set_history_state(url, push) {
       try {
-        history.replaceState(history.state, '', url)
-      } catch {
-        location.replace(url)
-      }
+        if (push)
+            history.pushState(history.state, '', url)
+        else
+            history.replaceState(history.state, '', url)
+      } catch {}  // for iframes
     }
     
     function update(hash) {
@@ -564,6 +565,8 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
         }
         if (start < end)
           code.setSelectionRange(start, end + code.value.length - orig_len)
+        if (code.value != save_code)
+          set_history_state(url, true)
         update()
         run_stop.classList.remove('running')
         if (loop && !controller.signal.aborted)
