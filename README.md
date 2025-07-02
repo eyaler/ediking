@@ -25,8 +25,14 @@ Short link: [tfi.la/e](https://tfi.la/e)
 - Add `target="_blank"` to `a` links of different origin, to allow opening from iframe
 - Grab title and favicon from iframe
 
+### Things I may to add
+- Traversable edit history (especially for looping generation)
+- Direct editing of the iframe (aka designMode) reflected in the code editor
+- Use GUN.js or Nostr for persistence and collaborative editing
+- Syntax highlighting and other code editor niceties
+
 ### Experimental Writer / Rewriter Chrome API integration
-- Requires Chrome Desktop 138+, 22 GB disk space, and 4 GB GPU (see: https://developer.chrome.com/docs/ai/writer-api)
+- Requires Chrome desktop 138+, 22 GB disk space, and 4 GB GPU (see: https://developer.chrome.com/docs/ai/writer-api)
 - API explainer: https://github.com/webmachinelearning/writing-assistance-apis
 - LLM patterns used here:
   1. __Write from scratch__: no code -> `write(fullcode_prompt + prompt)`
@@ -47,6 +53,7 @@ Short link: [tfi.la/e](https://tfi.la/e)
   - Tab completions
   - Inline protected code regions (e.g. tests)
   - Automatic error capturing
+  - Prompt API
   - Multimodal input of the rendered iframe screenshot
   - Parse `.prompt` files for system prompt and params
   - Allow LLM to generate its next prompt (can currently be emulated via generated code comments)

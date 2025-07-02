@@ -108,7 +108,7 @@
       font-size: 1rem;
       padding: 1rem;
       padding-left: 1.5rem;
-      tab-size: 1em;
+      tab-size: 2ch;
     }
     
     #code {
@@ -227,35 +227,60 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ediKing</title>
-  <style>
-    body {
-      align-items: center;
-      background-image: radial-gradient(red 25%, transparent 0);
-      background-repeat: space;
-      background-size: 10vmin 10vmin;
-      display: flex;
-      flex-direction: column;
-      font-size: max(2em, 5vw);
-      justify-content: safe center;
-      margin: 0;
-      min-height: 100vh;
-      min-height: 100dvh;
-    }
-    
-    body > * {
-      background-color: #ff88;
-      padding: .1em .3em;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ediKing</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            font-family: system-ui;
+            font-size: 1.5em;
+            margin: 0;
+            min-height: 100vh;
+            min-height: 100dvh;
+        }
+        
+        div {
+            align-items: center;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            text-align: center;
+            width: 100%;
+        }
+        
+        div > * {
+            flex-grow: 1;
+            line-height: max(100%, 2rem);
+            margin-block: 1rem;
+            margin-inline: 1rem;
+            max-width: 70ch;
+        }
+        
+        a {
+            color: inherit;
+            font-family: monospace;
+        }
+    </style>
 </head>
 <body>
-  <h1>Why</h1>
-  <h3>do you</h3>
-  <h3>always</h3>
-  <h6>sit on dots?</h6>
+	<div style="background-color: darkred; color: pink; font-family: Georgia, serif;">
+        <p style="font-size: 4em;">Hi!</p>
+        <p>I'm a website.</p>
+        <p>And I live in the URL.</p>
+	</div>
+	<div style="background-color: #ffbb00; color: black;">
+        <p>You can edit the code on the left.</p>
+        <p>If you got <b>Chrome desktop 138+</b>, <b>22 GB disk space</b>, and <b>4 GB GPU</b>... you can use the built-in <b>Gemini Nano LLM</b> to write and edit code. Autopilot mode included.</p>
+        <p>By the way, everything here is client-side.</p>
+	</div>
+	<div style="background-color: blue; color: #00ff00;">
+        <p><a href="https://tfi.la/e#recur">Fun with recursion</a></p>
+        <p><a href="https://tfi.la/e?loop=1&prompt=Communicate+with+the+aliens+using+text%2C+shapes+and+colors.+Change+the+prevoius+message+and+make+it+even+more+psychedelic%21#%3C!DOCTYPE%20html%3E%0A%3Chtml%20lang%3D%22en%22%3E%0A%3Cbody%3E%0A%3Ch1%3EMessage%20to%20the%20aliens...%3C%2Fh1%3E%0A%3C%2Fbody%3E%0A%3C%2Fhtml%3E">Alien translation airlock</a><br><small>(requires LLM)</small></p>
+        <p><a href="https://github.com/eyaler/ediking">The code behind the code</a></p>
+        <p><small>Made by</small><br><a href="https://eyalgruss.com">Eyal Gruss</a></p>
+    </div>
 </body>
 </html></textarea>
     <textarea id="prom" autocomplete="off" placeholder="Prompt here." rows="1"></textarea>
@@ -281,7 +306,7 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
       }
     }
     
-    function update(hash=null) {
+    function update(hash) {
       if (hash != null) {
         const disp = get_url_param()
         if (disp) {
@@ -313,8 +338,7 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
       active_before_update = document.activeElement
       iframe.srcdoc = code.value
       editor.after(iframe)
-      if (hash == null)
-        set_history_state('#' + encodeURIComponent(code.value))
+      set_history_state('#' + encodeURIComponent(code.value))
     }
     
     code.addEventListener('focus', () => prom_active = false)
@@ -440,7 +464,7 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
       return s.replace(/(?<!:)(\/\/[^\r\n]*)$/, '$1\n')
     }
     
-    async function generate(mod=null, finish_start=null) {
+    async function generate(mod, finish_start) {
       if (!ai.checked)
         ai.click()
       
@@ -666,7 +690,7 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
           textarea.selectionEnd = start
           if (!e.shiftKey)
             document.execCommand('insertText', false, '\t')
-          else if (text[start - 1]?.match(/\s/))
+          else if (text[start - 1]?.match(/[ \t]/))
             document.execCommand('delete')
           textarea.selectionEnd = textarea.selectionStart + end - start
         }
