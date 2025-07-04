@@ -95,6 +95,7 @@
     
     #editor {
       display: grid;
+      --font_size_factor: 1;
     }
     
     iframe, textarea {
@@ -105,7 +106,7 @@
     }
     
     textarea {
-      font-size: 1rem;
+      font-size: calc(1rem * var(--font_size_factor));
       padding: 1rem;
       padding-left: 1.5rem;
       tab-size: 2ch;
@@ -229,6 +230,10 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
   
   <script>
     let active_before_update, prom_active, writer, rewriter, controller, user_click, loop
+    let font_size_factor = +getComputedStyle(editor).getPropertyValue('--font_size_factor')
+    const font_size_factor_step = .1
+    const min_font_size_factor = .1
+    const max_font_size_factor = 10
     
     const landing_html = `<!DOCTYPE html>
 <html lang="en">
@@ -279,7 +284,7 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
 	<div style="background-color: #ffbb00; color: black;">
         <p>You can edit the code on the left.</p>
         <p>If you got <b>Chrome desktop 138+</b>, <b>22 GB disk space</b>, and <b>4 GB GPU</b>... you can use the built-in <b>Gemini Nano LLM</b> to write and edit code. Autovibe mode included.</p>
-        <p>By the way, everything here is client-side.</p>
+        <p>By the way, everything here is 100% client-side.</p>
 	</div>
 	<div style="background-color: blue; color: #00ff00;">
         <p><a href="https://tfi.la/e#recur">Fun with recursion</a></p>
@@ -367,7 +372,7 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
       })
       if (get_url_param() < 3)
         iframe.contentDocument.addEventListener('keydown', e => {
-          if (!e.altKey && !e.getModifierState?.('AltGraph') && (e.ctrlKey || e.metaKey) && e.code == 'KeyF' && e.shiftKey && get_url_param() < 3) {
+          if (e.code == 'KeyF' && !e.altKey && !e.getModifierState?.('AltGraph') && (e.ctrlKey || e.metaKey) && e.shiftKey) {
             e.preventDefault()
             full.click()
           }
@@ -415,7 +420,7 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
       if (await Writer.availability() == 'available' && await Rewriter.availability() == 'available')
         ai.click()
       else if (!recheck)
-        setTimeout(check_model, 5000, true)  // Delay to deal with https://issues.chromium.org/issues/429183223
+        setTimeout(check_model, 10000, true)  // Delay to deal with https://issues.chromium.org/issues/429183223
     }
     
     function monitor(m) {
@@ -494,7 +499,8 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
         code.readOnly = true
         run_stop.classList.add('running')
         
-        controller = new AbortController()
+        if (finish_start == null)
+          controller = new AbortController()
         const abort_signal = {signal: controller.signal}
         
         let code_text = code.value
@@ -676,7 +682,9 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
 
     document.addEventListener('keydown', e => {
       if (!e.altKey && !e.getModifierState?.('AltGraph') && (e.ctrlKey || e.metaKey) &&
-        (e.code == 'KeyF' && e.shiftKey && get_url_param() < 3 || e.key == 'Enter' && writer && rewriter || e.code == 'KeyS' && !e.shiftKey)) {
+          (e.code == 'KeyF' && e.shiftKey && get_url_param() < 3 ||
+           e.key == 'Enter' && writer && rewriter ||
+           (e.code == 'KeyS' || e.code.startsWith('Bracket')) && !e.shiftKey)) {
         e.preventDefault()
         if (e.code == 'KeyF')
           full.click()
@@ -684,6 +692,13 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
           generate(e.shiftKey)
         else if (e.code == 'KeyS')
           save()
+        else if (e.code.startsWith('Bracket')) {
+          if (e.code == 'BracketLeft')
+            font_size_factor = Math.max(font_size_factor - font_size_factor_step, min_font_size_factor)
+          else if (e.code == 'BracketRight')
+            font_size_factor = Math.min(font_size_factor + font_size_factor_step, max_font_size_factor)
+          editor.style.setProperty('--font_size_factor', font_size_factor)
+        }
       }
     })
     

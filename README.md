@@ -3,11 +3,12 @@
 Short link: [tfi.la/e](https://tfi.la/e)
 
 ### Shortcuts
-- `Ctrl+Shift+F` - Show/hide editor (full screen)
-- `Ctrl+Enter` - Run/stop generation (when LLM is available)
-- `Ctrl+Shift+Enter` (or `Ctrl+Click` on the button) - Looping/no-loop generation (when LLM is available)
-- `Ctrl+S` - Save HTML file (currently rendered version)
-- `Tab`, `Shift+Tab`, `Enter` - Indentation at cursor location (not line-level but preserves undo stack)
+- `Ctrl + Shift + F` - Show / hide editor (full screen)
+- `Ctrl + Enter` - Run / stop generation (when LLM is available)
+- `Ctrl + Shift + Enter` (or `Ctrl + Click` on the button) - Looping / no-loop generation (when LLM is available)
+- `Ctrl + S` - Save HTML file (currently rendered version)
+- `Tab`, `Shift + Tab`, `Enter` - Indentation at cursor location (not line-level but preserves undo stack)
+- `Ctrl + [` / `Ctrl + ]` - Decrease / increase editor font size
 - Drag and drop file(s) over editor - Open and add HTML tags for CSS and JS, `.prompt` files loaded to prompt (as raw text)
 
 ### URL API (auto-synced)
