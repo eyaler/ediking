@@ -209,7 +209,7 @@
     }
   </style>
 </head>
-<body onload="update(location.hash)" onpopstate="controller?.abort('nav'); update(location.hash)">
+<body onload="update(location.hash)" onpopstate="update(location.hash, true)">
   <div id="controls">
     <input id="full" autocomplete="off" type="checkbox" aria-controls="editor" aria-expanded="true" aria-keyshortcuts="Ctrl+Shift+F">
     <label for="full" tabindex="0" title="Show/hide editor [Ctrl+Shift+F]"></label>
@@ -318,15 +318,29 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
       } catch {}  // for iframes
     }
     
-    function update(hash) {
+    function fix_disp_param() {
+      const disp = get_url_param()
+      if (!full.checked && disp == 1 || full.checked && !disp) {
+        const url = new URL(location)
+        if (disp)
+          url.searchParams.delete('disp')
+        else
+          url.searchParams.set('disp', 1)
+        set_history_state(url)
+      }
+    }
+    
+    function update(hash, pop) {
       if (hash != null) {
+        if (pop) {
+          controller?.abort('nav')
+          fix_disp_param()
+        }
         const disp = get_url_param()
         if (!disp == full.checked)
           full.click()
-        if (disp == 2)
-          controls.classList.add('conditional_hide')
-        else if (disp == 3)
-          controls.classList.add('hide')
+        controls.classList.toggle('conditional_hide', disp == 2)
+        controls.classList.toggle('hide', disp == 3)
         const noai = get_url_param('noai') || hash == '#recur'
         if (!self.Writer || !self.Rewriter || noai) {
           ai.disabled = true
@@ -384,15 +398,7 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
     // Toggle buttons
     
     full.addEventListener('change', () => {
-      const disp = get_url_param()
-      const url = new URL(location)
-      if (!full.checked && disp == 1 || full.checked && !disp) {
-        if (disp)
-          url.searchParams.delete('disp')
-        else
-          url.searchParams.set('disp', 1)
-        set_history_state(url)
-      }
+      fix_disp_param()
       full.ariaExpanded = !full.checked
       
       if (full.checked) {
@@ -596,7 +602,9 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
     // New, open, save, share
     
     function new_editor(e) {
-      const url = location.pathname
+      let url = location.pathname
+      if (get_url_param('noai'))
+        url += '?noai=1'
       if (e.ctrlKey || e.metaKey || e.button == 1)
         window.open(url, '_blank')
       else {
