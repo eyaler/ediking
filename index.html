@@ -58,6 +58,7 @@
     
     #full:checked + label::before {
       content: '\21f2';
+      text-shadow: 1px 0 Canvas;
     }
     
     #controls > :is(
@@ -320,11 +321,12 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
     function update(hash) {
       if (hash != null) {
         const disp = get_url_param()
-        if (disp) {
+        if (!disp == full.checked)
           full.click()
-          if (disp == 2) controls.classList.add('conditional_hide')
-          if (disp == 3) controls.classList.add('hide')
-        }
+        if (disp == 2)
+          controls.classList.add('conditional_hide')
+        else if (disp == 3)
+          controls.classList.add('hide')
         const noai = get_url_param('noai') || hash == '#recur'
         if (!self.Writer || !self.Rewriter || noai) {
           ai.disabled = true
@@ -416,8 +418,11 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
     const fullcode_prompt = 'Output only a complete single-file HTML code (including CSS/JS inside). Popular JS libraries can be used from CDN.'
     
     async function check_model(recheck) {
-      if (await Writer.availability() == 'available' && await Rewriter.availability() == 'available' && !ai.checked)
-        ai.click()
+      if (await Writer.availability() == 'available' && await Rewriter.availability() == 'available')
+        if (ai.checked)
+          prom.value = get_url_param('prompt') || ''
+        else
+          ai.click()
       else if (!recheck)
         setTimeout(check_model, 10000, true)  // Delay to deal with https://issues.chromium.org/issues/429183223
     }
