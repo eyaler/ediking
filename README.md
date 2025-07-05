@@ -2,19 +2,19 @@
 ### A client-side HTML editor
 Short link: [tfi.la/e](https://tfi.la/e)
 
-### Shortcuts
+### Keys and gestures
 - `Ctrl + Shift + F` - Show / hide editor (full screen)
 - `Ctrl + Enter` - Run / stop generation (when LLM is available)
 - `Ctrl + Shift + Enter` (or `Ctrl + Click` on the button) - Looping / no-loop generation (when LLM is available)
 - `Ctrl + S` - Save HTML file (currently rendered version)
+- `Alt + 0/-/+` - Reset / decrease / increase editor font size
 - `Tab`, `Shift + Tab`, `Enter` - Indentation at cursor location (not line-level but preserves undo stack)
-- `Ctrl + [` / `Ctrl + ]` - Decrease / increase editor font size
 - Drag and drop file(s) over editor - Open and add HTML tags for CSS and JS, `.prompt` files loaded to prompt (as raw text)
 
 ### URL API (auto-synced)
 - `#...` - Code
 - `?disp=1` - Hide editor
-- `?disp=2` - Hide editor, no show/hide button (keyboard shortcut still works)
+- `?disp=2` - Hide editor, no show/hide button, `Ctrl` keyboard shortcuts work
 - `?disp=3` - Hide editor, no show/hide button, no keyboard shortcut
 - `?prompt=...` - Prompt (when LLM is available)
 - `?loop=1` - Looping generation (when LLM is available)
@@ -22,7 +22,7 @@ Short link: [tfi.la/e](https://tfi.la/e)
 
 ### iframe convenience features
 - Prevent iframe from stealing focus on load
-- Have iframe listen to keyboard shortcut to show editor
+- Have iframe listen to the `Ctrl` keyboard shortcuts
 - Add `target="_blank"` to `a` links of different origin, to allow opening from iframe
 - Grab title and favicon from iframe
 

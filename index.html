@@ -6,6 +6,10 @@
   <meta http-equiv="origin-trial" content="AuNKSznJ6LrYQVkRVSU8tEGYGUKwESgcga0TKEK7Y3dn8krurrd7lw8B2nG34/uyRoZE2wPJVX15KTnFvP0JDQ8AAABVeyJvcmlnaW4iOiJodHRwczovL2V5YWxlci5naXRodWIuaW86NDQzIiwiZmVhdHVyZSI6IkFJV3JpdGVyQVBJIiwiZXhwaXJ5IjoxNzY5NDcyMDAwfQ==">
   <meta http-equiv="origin-trial" content="Am/ycuw2pTJfI5C2G4K2KBHTB9FNmq/LY1sL2e2vt0RP0Kva7ssoFqmeopY9cDeZyPIYLa1LJFSWgwCf6wNaSwcAAABXeyJvcmlnaW4iOiJodHRwczovL2V5YWxlci5naXRodWIuaW86NDQzIiwiZmVhdHVyZSI6IkFJUmV3cml0ZXJBUEkiLCJleHBpcnkiOjE3Njk0NzIwMDB9">
   <style>
+    :root {
+      color-scheme: light dark;
+    }
+    
     body {
       display: grid;
       height: 100vh;
@@ -44,7 +48,7 @@
     
     @media (hover: hover) {
       #controls > :is(:hover, :focus-visible) {
-        background-color: #e0e0e0;
+        background-color: light-dark(#e0e0e0, #404040);
       }
     }
     
@@ -64,7 +68,7 @@
       input[type=checkbox]:not(#full):checked + label:not(:active),
       .running:not(:active)
     ){
-      background-color: #c0c0c0;
+      background-color: light-dark(#c0c0c0, #606060);
     }
     
     #ai:disabled + label {
@@ -230,7 +234,7 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
   
   <script>
     let active_before_update, prom_active, writer, rewriter, controller, user_click, loop
-    let font_size_factor = +getComputedStyle(editor).getPropertyValue('--font_size_factor')
+    let font_size_factor = 1
     const font_size_factor_step = .1
     const min_font_size_factor = .1
     const max_font_size_factor = 10
@@ -319,7 +323,7 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
         if (disp) {
           full.click()
           if (disp == 2) controls.classList.add('conditional_hide')
-          if (disp >= 3) controls.classList.add('hide')
+          if (disp == 3) controls.classList.add('hide')
         }
         const noai = get_url_param('noai') || hash == '#recur'
         if (!self.Writer || !self.Rewriter || noai) {
@@ -332,7 +336,7 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
             label.onclick = () => open('https://developer.chrome.com/docs/ai/writer-api', '_blank')
             label.title = 'Writer/Rewriter APIs not supported\nClick for details!'
           }
-        } else if (!ai.checked)
+        } else
           check_model()
         if (hash == '#recur')
           code.value = document.documentElement.outerHTML.replaceAll("'#recur'", 'hash')
@@ -371,12 +375,7 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
           a.target = '_blank'
       })
       if (get_url_param() < 3)
-        iframe.contentDocument.addEventListener('keydown', e => {
-          if (e.code == 'KeyF' && !e.altKey && !e.getModifierState?.('AltGraph') && (e.ctrlKey || e.metaKey) && e.shiftKey) {
-            e.preventDefault()
-            full.click()
-          }
-        })
+        iframe.contentDocument.addEventListener('keydown', global_keys_handler)
     })
     
     
@@ -417,7 +416,7 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
     const fullcode_prompt = 'Output only a complete single-file HTML code (including CSS/JS inside). Popular JS libraries can be used from CDN.'
     
     async function check_model(recheck) {
-      if (await Writer.availability() == 'available' && await Rewriter.availability() == 'available')
+      if (await Writer.availability() == 'available' && await Rewriter.availability() == 'available' && !ai.checked)
         ai.click()
       else if (!recheck)
         setTimeout(check_model, 10000, true)  // Delay to deal with https://issues.chromium.org/issues/429183223
@@ -674,33 +673,49 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
     }
     
     function share(mod) {
-        (!mod && navigator.share?.({url: location.href}).catch(() => {})) || navigator.clipboard.writeText(location.href)
+      (!mod && navigator.share?.({url: location.href}).catch(() => {})) || navigator.clipboard.writeText(location.href)
     }
 
 
     // Keyboard input
+    
+    document.addEventListener('keydown', global_keys_handler)
 
     document.addEventListener('keydown', e => {
-      if (!e.altKey && !e.getModifierState?.('AltGraph') && (e.ctrlKey || e.metaKey) &&
-          (e.code == 'KeyF' && e.shiftKey && get_url_param() < 3 ||
-           e.key == 'Enter' && writer && rewriter ||
-           (e.code == 'KeyS' || e.code.startsWith('Bracket')) && !e.shiftKey)) {
-        e.preventDefault()
-        if (e.code == 'KeyF')
-          full.click()
-        else if (e.key == 'Enter')
-          generate(e.shiftKey)
-        else if (e.code == 'KeyS')
-          save()
-        else if (e.code.startsWith('Bracket')) {
-          if (e.code == 'BracketLeft')
-            font_size_factor = Math.max(font_size_factor - font_size_factor_step, min_font_size_factor)
-          else if (e.code == 'BracketRight')
-            font_size_factor = Math.min(font_size_factor + font_size_factor_step, max_font_size_factor)
+      if ((e.altKey || e.getModifierState?.('AltGraph')) && !e.ctrlKey && !e.metaKey && !e.shiftKey) {
+        let font_size_change = true
+        if (e.key == '0' || e.code == 'Numpad0')  // For AZERTY keyboard
+          font_size_factor = 1
+        else if (e.key == '-' || e.code == 'Minus' && !'+?\\'.includes(e.key))
+          font_size_factor = Math.max(font_size_factor - font_size_factor_step, min_font_size_factor)
+        else if (e.key == '=' || e.code == 'Equal' && !'-_'.includes(e.key))
+          font_size_factor = Math.min(font_size_factor + font_size_factor_step, max_font_size_factor)
+        else
+          font_size_change = false
+        if (font_size_change) {
+          e.preventDefault()
           editor.style.setProperty('--font_size_factor', font_size_factor)
         }
       }
     })
+
+    function global_keys_handler(e) {
+      let key = e.key.toLowerCase()
+      if (!e.key.match(/^[a-z]$/) && e.code.match(/^Key[A-Z]$/))  // For Hebrew keyboard
+        key = e.code[3].toLowerCase()
+      if (!e.altKey && !e.getModifierState?.('AltGraph') && (e.ctrlKey || e.metaKey) &&
+        (key == 'f' && e.shiftKey ||
+         key == 'enter' && writer && rewriter ||
+         key == 's' && !e.shiftKey)) {
+        e.preventDefault()
+        if (key == 'f')
+          full.click()
+        else if (key == 'enter')
+          generate(e.shiftKey)
+        else if (key == 's')
+          save()
+      }
+    }
     
     controls.querySelectorAll('label').forEach(label => label.addEventListener('keydown', e => {
       if ((e.key == 'Enter' || e.key == ' ') && !e.altKey && !e.getModifierState?.('AltGraph') && !e.ctrlKey && !e.metaKey && !e.shiftKey) {
