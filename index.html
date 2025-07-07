@@ -672,10 +672,10 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
 
     editor.addEventListener('drop', e => {
       const files = e.dataTransfer.files
-      if (!files.length)
-        return
-      e.preventDefault()
-      open_files(files)
+      if (files.length) {
+        e.preventDefault()
+        open_files(files)
+      }
     })
     
     open_button.addEventListener('change', e => open_files(e.currentTarget.files))
@@ -695,9 +695,9 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
     function share(mod) {
       (!mod && navigator.share?.({url: location.href}).catch(() => {})) || navigator.clipboard.writeText(location.href)
     }
-
-
-    // Keyboard input
+    
+    
+    // Keyboard input (and paste)
     
     document.addEventListener('keydown', global_keys_handler)
 
@@ -760,6 +760,17 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
           else if (text[start - 1]?.match(/[ \t]/))
             document.execCommand('delete')
           textarea.selectionEnd = textarea.selectionStart + end - start
+        }
+      }
+    })
+    
+    editor.addEventListener('paste', e => {
+      if (document.execCommand) {
+        const cd = e.clipboardData
+        const text = cd.getData('text/html') || cd.getData('text/plain')
+        if (text) {
+          e.preventDefault()
+          document.execCommand('insertText', false, text)
         }
       }
     })
