@@ -25,6 +25,7 @@ Short link: [tfi.la/e](https://tfi.la/e)
 - Have iframe listen to the global `Ctrl` keyboard shortcuts
 - Add `target="_blank"` to `a` links of different origin, to allow opening from iframe
 - Grab title and favicon from iframe
+- Prevent top level navigation when file dropped on iframe
 
 ### Things I may to add
 - Compress the code and prompt saved in the URL

@@ -381,6 +381,11 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
         alert(`Too much data to save in URL - truncated to ${location.href.length} chars.`)
     })
     
+    function block_drop_nav(e) {
+      if (e.dataTransfer.types.includes('Files'))
+        e.preventDefault()
+    }
+    
     iframe.addEventListener('load', () => {
       active_before_update?.focus()
       const title = iframe.contentDocument.title
@@ -393,7 +398,8 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
           a.target = '_blank'
       })
       if (get_url_param() < 3)
-        iframe.contentDocument.addEventListener('keydown', global_keys_handler)
+        iframe.contentDocument.addEventListener('keydown', global_keys_handler, true)
+      ;['dragover', 'drop'].forEach(e => iframe.contentDocument.addEventListener(e, block_drop_nav, true))
     })
     
     
@@ -662,14 +668,14 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
         reader.readAsText(file)
       })
     }
-
+    
     editor.addEventListener('dragover', e => {
-      if ([...e.dataTransfer.types].some(t => t == 'Files')) {
+      if (e.dataTransfer.types.includes('Files')) {
         e.preventDefault()
         e.dataTransfer.dropEffect = 'copy'
       }
     })
-
+    
     editor.addEventListener('drop', e => {
       const files = e.dataTransfer.files
       if (files.length) {
