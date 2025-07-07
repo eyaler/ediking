@@ -68,7 +68,7 @@
       ):active,
       input[type=checkbox]:not(#full):checked + label:not(:active),
       .running:not(:active)
-    ){
+    ) {
       background-color: light-dark(#c0c0c0, #787878);
     }
     
@@ -697,7 +697,14 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
     }
     
     
-    // Keyboard input (and paste)
+    // Keyboard input
+    
+    function get_layout_key(e) {
+      let key = e.key.toLowerCase()
+      if (!e.key.match(/^[a-z]$/) && e.code.match(/^Key[A-Z]$/))  // For Hebrew keyboard
+        key = e.code[3].toLowerCase()
+      return key
+    }
     
     document.addEventListener('keydown', global_keys_handler)
 
@@ -720,19 +727,17 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
     })
 
     function global_keys_handler(e) {
-      let key = e.key.toLowerCase()
-      if (!e.key.match(/^[a-z]$/) && e.code.match(/^Key[A-Z]$/))  // For Hebrew keyboard
-        key = e.code[3].toLowerCase()
-      if (!e.altKey && !e.getModifierState?.('AltGraph') && (e.ctrlKey || e.metaKey) &&
-        (key == 'f' && e.shiftKey ||
-         key == 'enter' && writer && rewriter ||
-         key == 's' && !e.shiftKey)) {
+      const layout_key = get_layout_key(e)
+      if (!e.altKey && !e.getModifierState?.('AltGraph') && (e.ctrlKey || e.metaKey) && (
+          layout_key == 'f' && e.shiftKey ||
+          e.key == 'Enter' && writer && rewriter ||
+          layout_key == 's' && !e.shiftKey)) {
         e.preventDefault()
-        if (key == 'f')
+        if (layout_key == 'f')
           full.click()
-        else if (key == 'enter')
+        else if (e.key == 'Enter')
           generate(e.shiftKey)
-        else if (key == 's')
+        else if (layout_key == 's')
           save()
       }
     }
@@ -760,17 +765,6 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
           else if (text[start - 1]?.match(/[ \t]/))
             document.execCommand('delete')
           textarea.selectionEnd = textarea.selectionStart + end - start
-        }
-      }
-    })
-    
-    editor.addEventListener('paste', e => {
-      if (document.execCommand) {
-        const cd = e.clipboardData
-        const text = cd.getData('text/html') || cd.getData('text/plain')
-        if (text) {
-          e.preventDefault()
-          document.execCommand('insertText', false, text)
         }
       }
     })

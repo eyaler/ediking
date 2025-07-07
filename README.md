@@ -9,7 +9,6 @@ Short link: [tfi.la/e](https://tfi.la/e)
 - `Ctrl`+`S` - Save HTML file (currently rendered version)
 - `Alt`+`0`/`-`/`+` - Reset / decrease / increase editor font size
 - `Tab`, `Shift`+`Tab`, `Enter` - Indentation at cursor location (not line-level but preserves undo stack)
-- `Ctrl`+`V` - Paste HTML source
 - Drag and drop file(s) over editor - Open and add HTML tags for CSS and JS, `.prompt` files loaded to prompt (as raw text)
 
 ### URL API (auto-synced)
