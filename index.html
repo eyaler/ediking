@@ -48,7 +48,7 @@
     
     @media (hover: hover) {
       #controls > :is(:hover, :focus-visible) {
-        background-color: light-dark(#e0e0e0, #404040);
+        background-color: light-dark(#e0e0e0, #585858);
       }
     }
     
@@ -69,7 +69,7 @@
       input[type=checkbox]:not(#full):checked + label:not(:active),
       .running:not(:active)
     ){
-      background-color: light-dark(#c0c0c0, #606060);
+      background-color: light-dark(#c0c0c0, #787878);
     }
     
     #ai:disabled + label {
@@ -234,7 +234,7 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
   </div>
   
   <script>
-    let active_before_update, prom_active, writer, rewriter, controller, user_click, loop
+    let active_before_update, prom_active, writer, rewriter, controller, user_click, loop, was_loop
     let font_size_factor = 1
     const font_size_factor_step = .1
     const min_font_size_factor = .1
@@ -499,6 +499,7 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
       else if (mod != null)
         loop = false
       run_stop.classList.toggle('loop', loop)
+      was_loop ||= loop
       
       const url = new URL(location)
       if (!loop)
@@ -571,7 +572,7 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
             if (start < end)
               code.setSelectionRange(start, end + code.value.length - orig_len)
           }
-          if (!loop && !code.value.includes('</html>') && !code_after.trim() && !controller.signal.aborted)
+          if (!was_loop && !code.value.includes('</html>') && !code_after.trim() && !controller.signal.aborted)
             await generate(null, start, start < end ? end + code.value.length - orig_len : end)
         } catch (error) {
           if (error.name == 'QuotaExceededError') {
@@ -580,7 +581,7 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
               run_stop.click()
           } else if (error.name != 'AbortError' && error != 'nav') {
             console.error(error)
-            if (loop)
+            if (was_loop)
               code.value = save_code
             else
               alert(error)
@@ -598,6 +599,7 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
         else {
           run_stop.classList.remove('running')
           code.removeAttribute('readonly')
+          was_loop = false
         }
       } else if (!mod)
         controller?.abort()
