@@ -339,19 +339,7 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
           full.click()
         controls.classList.toggle('conditional_hide', disp == 2)
         controls.classList.toggle('hide', disp == 3)
-        const noai = get_url_param('noai') || hash == '#recur'
-        if (!self.Writer || !self.Rewriter || noai) {
-          llm.disabled = true
-          const label = llm.nextElementSibling
-          if (noai)
-            label.classList.add('hide')
-          else {
-            label.role = 'link'
-            label.onclick = () => open('https://developer.chrome.com/docs/ai/writer-api', '_blank')
-            label.title = 'Writer/Rewriter APIs not supported\nClick for details!'
-          }
-        } else
-          check_model()
+        check_model()
         if (hash == '#recur')
           code.value = document.documentElement.outerHTML.replaceAll("'#recur'", 'hash')
         else if (hash)
@@ -432,7 +420,20 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
     const fullcode_prompt = 'Output only a complete single-file HTML code (including CSS/JS inside). Popular JS libraries can be used from CDN.'
     
     async function check_model(recheck) {
-      if (await Writer.availability() == 'available' && await Rewriter.availability() == 'available')
+      noai = get_url_param('noai') || location.hash == '#recur'
+      writer_availability = self.Writer && await Writer.availability()
+      rewriter_availability = self.Rewriter && await Rewriter.availability()
+      if (noai || !writer_availability || !rewriter_availability || writer_availability == 'unavailable' || rewriter_availability == 'unavailable') {
+        llm.disabled = true
+        const label = llm.nextElementSibling
+        if (noai)
+          label.classList.add('hide')
+        else {
+          label.role = 'link'
+          label.onclick = () => open('https://developer.chrome.com/docs/ai/writer-api', '_blank')
+          label.title = 'Writer/Rewriter APIs not supported\nClick for details!'
+        }
+      } else if (writer_availability == 'available' && rewriter_availability == 'available')
         if (llm.checked)
           prom.value = get_url_param('prompt') || ''
         else
