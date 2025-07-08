@@ -313,7 +313,9 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
           history.pushState(history.state, '', url)
         else
           history.replaceState(history.state, '', url)
-      } catch {}  // for iframes
+      } catch {  // for iframes
+        if (!push)
+          location.replace(url)
     }
     
     function fix_disp_param() {
