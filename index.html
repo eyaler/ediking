@@ -23,8 +23,8 @@
     #controls:has(#full:checked).conditional_hide,
     #controls:has(#full:checked) :not(:is(#full, #full + label)),
     #controls:has(#full:checked) ~ #editor,
-    #ai:is(:not(:checked), :disabled) ~ #run_stop,
-    #controls:has(#ai:is(:not(:checked), :disabled)) ~ #editor #prom {
+    #llm:is(:not(:checked), :disabled) ~ #run_stop,
+    #controls:has(#llm:is(:not(:checked), :disabled)) ~ #editor #prom {
       display: none !important;
     }
     
@@ -72,7 +72,7 @@
       background-color: light-dark(#c0c0c0, #787878);
     }
     
-    #ai:disabled + label {
+    #llm:disabled + label {
       cursor: pointer;
       opacity: 35%;
       rotate: .5turn;
@@ -147,7 +147,7 @@
       width: 100vw !important;
     }
     
-    #controls:has(#ai:not(:checked)) ~ #prom {
+    #controls:has(#llm:not(:checked)) ~ #prom {
       border: none;
     }
     
@@ -161,7 +161,7 @@
         width: min-content;
       }
       
-      #controls:has(#ai:not(:checked)) ~ #editor #code {
+      #controls:has(#llm:not(:checked)) ~ #editor #code {
         height: 100vh !important;
         height: 100dvh !important;
         resize: horizontal;
@@ -194,7 +194,7 @@
         min-height: 100%;
       }
             
-      #controls:has(#ai:not(:checked)) ~ #editor #code {
+      #controls:has(#llm:not(:checked)) ~ #editor #code {
         resize: vertical;
         width: 100vw !important;
       }
@@ -215,8 +215,8 @@
     <label for="full" tabindex="0" title="Show/hide editor [Ctrl+Shift+F]"></label>
     <input id="wrap" type="checkbox" checked autocomplete="off">
     <label for="wrap" tabindex="0" title="Word wrap">w</label>
-    <input id="ai" type="checkbox" autocomplete="off" aria-controls="prom" aria-expanded="false">
-    <label for="ai" tabindex="0" title="Toggle AI">&#x1f916;</label>
+    <input id="llm" type="checkbox" autocomplete="off" aria-controls="prom" aria-expanded="false">
+    <label for="llm" tabindex="0" title="Toggle LLm">&#x1f916;</label>
     <button id="run_stop" onclick="generate(event.ctrlKey || event.metaKey || event.button == 1)" aria-keyshortcuts="Ctrl+Enter Ctrl+Shift+Enter" title="Run/stop generation [Ctrl+Enter]
 Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
     <button onclick="update()" title="Reload iframe">&#x27f3;</button>
@@ -341,8 +341,8 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
         controls.classList.toggle('hide', disp == 3)
         const noai = get_url_param('noai') || hash == '#recur'
         if (!self.Writer || !self.Rewriter || noai) {
-          ai.disabled = true
-          const label = ai.nextElementSibling
+          llm.disabled = true
+          const label = llm.nextElementSibling
           if (noai)
             label.classList.add('hide')
           else {
@@ -433,10 +433,10 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
     
     async function check_model(recheck) {
       if (await Writer.availability() == 'available' && await Rewriter.availability() == 'available')
-        if (ai.checked)
+        if (llm.checked)
           prom.value = get_url_param('prompt') || ''
         else
-          ai.click()
+          llm.click()
       else if (!recheck)
         setTimeout(check_model, 5000, true)  // Delay to deal with https://issues.chromium.org/issues/429183223
     }
@@ -448,10 +448,10 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
       })
     }
     
-    ai.addEventListener('click', e => user_click = user_click == null || e.isTrusted)
+    llm.addEventListener('click', e => user_click = user_click == null || e.isTrusted)
     
-    ai.addEventListener('change', async () => {
-      if (ai.checked) {
+    llm.addEventListener('change', async () => {
+      if (llm.checked) {
         if (writer == null || rewriter == null) {
           prom.readOnly = true
           prom.value = 'Loading model...'
@@ -483,13 +483,13 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
             if (!rewriter && phase == 'rewriter')
               rewriter = null
             alert(error)
-            ai.checked = false
+            llm.checked = false
           }
         } else if (user_click)
           prom.focus()
       } else
         code.focus()
-      ai.ariaExpanded = ai.checked
+      llm.ariaExpanded = llm.checked
     })
   
     function close_comment(s) {
@@ -515,8 +515,8 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
       set_history_state(url)
       
       if (!run_stop.classList.contains('running') || mod == null) {
-        if (!ai.checked && mod != null)
-          ai.click()
+        if (!llm.checked && mod != null)
+          llm.click()
         
         code.readOnly = true
         run_stop.classList.add('running')
@@ -643,9 +643,9 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
                 prom.value = ''
               prom.value += content
               have_prompt = true
-              if (!ai.checked) {
+              if (!llm.checked) {
                 user_click = null
-                ai.click()
+                llm.click()
               } else
                 prom.focus()
             }
