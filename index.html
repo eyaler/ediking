@@ -313,10 +313,7 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
           history.pushState(history.state, '', url)
         else
           history.replaceState(history.state, '', url)
-      } catch {  // for iframes
-        if (!push)
-          location.replace(url)
-      }
+      } catch { }  // for iframes
     }
     
     function fix_disp_param() {
@@ -366,7 +363,7 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
       iframe.srcdoc = code.value
       editor.after(iframe)
       set_history_state('#' + encodeURIComponent(code.value))
-      if (decodeURIComponent(location.hash.slice(1)) != code.value)
+      if (decodeURIComponent(location.hash.slice(1)) != code.value && self == top)
         alert(`Too much data to save in URL - truncated to ${location.href.length} chars.`)
     }
     
@@ -380,7 +377,7 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
       else
         url.searchParams.set('prompt', prom.value)
       set_history_state(url)
-      if (prom.value && new URL(location).searchParams.get('prompt') != prom.value)
+      if (prom.value && new URL(location).searchParams.get('prompt') != prom.value && self == top)
         alert(`Too much data to save in URL - truncated to ${location.href.length} chars.`)
     })
     
