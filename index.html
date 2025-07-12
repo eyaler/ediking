@@ -762,9 +762,13 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
         const textarea = e.target
         const start = textarea.selectionStart
         const text = textarea.value
-        if (e.key == 'Enter')
+        if (e.key == 'Enter') {
+          if (e.shiftKey) {
+            const end = (text + '\n').indexOf('\n', start)
+            textarea.setSelectionRange(end, end)
+          }
           document.execCommand('insertText', false, '\n' + text.slice(text.lastIndexOf('\n', start - 1) + 1).match(/^[ \t]*/))
-        else if (e.key == 'Tab') {
+        } else if (e.key == 'Tab') {
           const end = textarea.selectionEnd
           textarea.selectionEnd = start
           if (!e.shiftKey)

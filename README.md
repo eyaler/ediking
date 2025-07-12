@@ -8,7 +8,7 @@ Short link: [tfi.la/e](https://tfi.la/e)
 - `Ctrl`+`Shift`+`Enter` (or `Ctrl`+`Click` on the button) - Looping / no-loop generation (when LLM is available)
 - `Ctrl`+`S` - Save HTML file (currently rendered version)
 - `Alt`+`0`/`-`/`+` - Reset / decrease / increase editor font size
-- `Tab`, `Shift`+`Tab`, `Enter` - Indentation at cursor location (not line-level but preserves undo stack)
+- `Tab`, `Shift`+`Tab`, `Enter`, `Shift`+`Enter` (start new line) - Indentation at cursor location (not line-level but preserves undo stack)
 - Drag and drop file(s) over editor - Open and add HTML tags for CSS and JS, `.prompt` files loaded to prompt (as raw text)
 
 ### URL API (auto-synced)
