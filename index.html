@@ -473,7 +473,7 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
             }
             if (writer && rewriter) {
               prom.value = get_url_param('prompt') || ''
-              prom.removeAttribute('readonly')
+              prom.readOnly = false
               run_stop.classList.remove('hide')
               if (get_url_param('loop'))
                 generate(true)
@@ -605,7 +605,7 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
           await generate()
         else {
           run_stop.classList.remove('running')
-          code.removeAttribute('readonly')
+          code.readOnly = false
           was_loop = false
         }
       } else if (!mod)
@@ -765,7 +765,7 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
         if (e.key == 'Enter') {
           if (e.shiftKey) {
             const end = (text + '\n').indexOf('\n', start)
-            textarea.setSelectionRange(end, end)
+            textarea.selectionStart = end
           }
           document.execCommand('insertText', false, '\n' + text.slice(text.lastIndexOf('\n', start - 1) + 1).match(/^[ \t]*/))
         } else if (e.key == 'Tab') {
