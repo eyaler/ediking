@@ -31,7 +31,7 @@ Short link: [tfi.la/e](https://tfi.la/e)
 - Compress the code and prompt saved in the URL
 - Drag and drop HTML content and links to grab code
 - Direct editing of the iframe (aka designMode) reflected in the code editor
-- Use GUN.js or Nostr for persistence and collaborative editing
+- Use gunDB or Nostr for persistence and collaborative editing
 - Syntax highlighting and other code editor niceties
 
 ### Experimental Writer / Rewriter Chrome API integration
