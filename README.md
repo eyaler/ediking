@@ -30,7 +30,7 @@ Short link: [tfi.la/e](https://tfi.la/e)
 ### Things I may to add
 - Starter templates: empty, HTML, JS, p5.js, custom
 - Compress the code and prompt saved in the URL
-- Consider local storage for more accessible local persistence
+- Local storage for easier local persistence
 - Drag and drop HTML content and links to grab code
 - Direct editing of the iframe (aka designMode) reflected in the code editor
 - Use gunDB or Nostr for persistence, sharing and collaborative editing
