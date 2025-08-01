@@ -28,10 +28,12 @@ Short link: [tfi.la/e](https://tfi.la/e)
 - Prevent top level navigation when file dropped on iframe
 
 ### Things I may to add
+- Starter templates: empty, HTML, JS, p5.js, custom
 - Compress the code and prompt saved in the URL
+- Consider local storage for more accessible local persistence
 - Drag and drop HTML content and links to grab code
 - Direct editing of the iframe (aka designMode) reflected in the code editor
-- Use gunDB or Nostr for persistence and collaborative editing
+- Use gunDB or Nostr for persistence, sharing and collaborative editing
 - Syntax highlighting and other code editor niceties
 
 ### Experimental Writer / Rewriter Chrome API integration
