@@ -16,13 +16,13 @@ Short link: [tfi.la/e](https://tfi.la/e)
 - `?disp=1` - Hide editor
 - `?disp=2` - Hide editor, no show/hide button, global `Ctrl` keyboard shortcuts work
 - `?disp=3` - Hide editor, no show/hide button, no keyboard shortcut
-- `?temp=` - Empty
-- `?temp=html` - HTML template
-- `?temp=js` - JS template
-- `?temp=p5` - p5.js template
+- [`?temp=`](https://tfi.la/e?temp=) - Empty
+- [`?temp=html`](https://tfi.la/e?temp=html) - HTML template
+- [`?temp=js`](https://tfi.la/e?temp=js) - JS template
+- [`?temp=p5`](https://tfi.la/e?temp=p5) - p5.js template
 - `?prompt=...` - Prompt (when LLM is available)
 - `?loop=1` - Looping generation (when LLM is available)
-- `?noai=1` - Disable LLM (aka student mode)
+- [`?noai=1`](https://tfi.la/e?noai=1) - Disable LLM (aka student mode)
 
 ### iframe convenience features
 - Prevent iframe from stealing focus on load
@@ -32,7 +32,7 @@ Short link: [tfi.la/e](https://tfi.la/e)
 - Prevent top level navigation when file dropped on iframe
 - Helper functions for output in iframe: parent.log(), parent.clear()
 
-### Things I may to add
+### Things I may add
 - Compress the code and prompt saved in the URL
 - Local storage for saner local persistence, and default/custom templates
 - Drag and drop HTML content and links to grab code
@@ -61,8 +61,8 @@ Short link: [tfi.la/e](https://tfi.la/e)
   - After aborting the next generation is delayed
 - Future opportunities:
   - Tab completions
-  - Inline protected code regions (e.g. tests)
-  - Automatic error capturing
+  - Inline protected code regions (e.g. for tests)
+  - Automatic error capturing and prompting
   - Prompt API
   - Multimodal input of the rendered iframe screenshot
   - Parse `.prompt` files for system prompt and params
