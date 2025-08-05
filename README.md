@@ -16,6 +16,10 @@ Short link: [tfi.la/e](https://tfi.la/e)
 - `?disp=1` - Hide editor
 - `?disp=2` - Hide editor, no show/hide button, global `Ctrl` keyboard shortcuts work
 - `?disp=3` - Hide editor, no show/hide button, no keyboard shortcut
+- `?temp=` - Empty
+- `?temp=html` - HTML template
+- `?temp=js` - JS template
+- `?temp=p5` - p5.js template
 - `?prompt=...` - Prompt (when LLM is available)
 - `?loop=1` - Looping generation (when LLM is available)
 - `?noai=1` - Disable LLM (aka student mode)
@@ -26,11 +30,11 @@ Short link: [tfi.la/e](https://tfi.la/e)
 - Add `target="_blank"` to `a` links of different origin, to allow opening from iframe
 - Grab title and favicon from iframe
 - Prevent top level navigation when file dropped on iframe
+- Helper functions for output in iframe: parent.log(), parent.clear()
 
 ### Things I may to add
-- Starter templates: empty, HTML, JS, p5.js, custom
 - Compress the code and prompt saved in the URL
-- Local storage for easier local persistence
+- Local storage for saner local persistence, and default/custom templates
 - Drag and drop HTML content and links to grab code
 - Direct editing of the iframe (aka designMode) reflected in the code editor
 - Use gunDB or Nostr for persistence, sharing and collaborative editing

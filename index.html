@@ -239,72 +239,144 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
     const font_size_factor_step = .1
     const min_font_size_factor = .1
     const max_font_size_factor = 10
+    const persistent_params = ['temp', 'noai']
+    const default_template = ''
     
-    const landing_html = `<!DOCTYPE html>
+    const templates = {
+        '': ``,
+        html: `<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>ediKing</title>
-    <style>
-        body {
-            display: flex;
-            flex-direction: column;
-            font-family: system-ui;
-            font-size: 1.5em;
-            margin: 0;
-            min-height: 100vh;
-            min-height: 100dvh;
-        }
-        
-        div {
-            align-items: center;
-            display: flex;
-            flex-direction: column;
-            flex-grow: 1;
-            text-align: center;
-            width: 100%;
-        }
-        
-        div > * {
-            flex-grow: 1;
-            line-height: max(100%, 2rem);
-            margin-block: 1rem;
-            margin-inline: 1rem;
-            max-width: 70ch;
-        }
-        
-        a {
-            color: inherit;
-            font-family: monospace;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title></title>
+  <style>
+    body {
+      
+    }
+    
+    
+  </style>
 </head>
 <body>
-    <div style="background-color: darkred; color: pink; font-family: Georgia, serif;">
-        <p style="font-size: 4em;">Hi!</p>
-        <p>I'm a website.</p>
-        <p>And I live in the URL.</p>
-    </div>
-    <div style="background-color: #ffbb00; color: black;">
-        <p>You can edit my code in the adjacent editor.</p>
-        <p>If you got <b>Chrome desktop 138+</b>, <b>22 GB disk space</b>, and <b>4 GB GPU</b>... you can use the built-in <b>Gemini Nano LLM</b> to write and edit code. Autovibe mode included.</p>
-        <p>By the way, everything here is 100% client-side.</p>
-    </div>
-    <div style="background-color: blue; color: #00ff00;">
-        <p><a href="https://tfi.la/e#recur">Fun with recursion</a></p>
-        <p><a href="https://tfi.la/e?loop=1&prompt=Communicate+with+the+aliens+using+text%2C+shapes+and+colors.+Change+the+prevoius+message+and+make+it+even+more+psychedelic%21#%3C!DOCTYPE%20html%3E%0A%3Chtml%20lang%3D%22en%22%3E%0A%3Cbody%3E%0A%3Ch1%3EMessage%20to%20the%20aliens...%3C%2Fh1%3E%0A%3C%2Fbody%3E%0A%3C%2Fhtml%3E">Alien translation airlock</a><br><small>(requires LLM)</small></p>
-        <p><a href="https://github.com/eyaler/ediking">The code behind the code</a></p>
-        <p><small>Made by</small><br><a href="https://eyalgruss.com">Eyal Gruss</a></p>
-    </div>
+  
 </body>
-</html>`
+</html>`,
+        js: `<script>
+
+
+
+<\/script>`,
+        p5: `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script src="https://cdn.jsdelivr.net/npm/p5"><\/script>
+</head>
+<body style="margin: 0;">
+  <script>
+    // globals:
+    
+    
+    function setup() {
+      createCanvas(windowWidth, windowHeight);
+      
+    }
+    
+    function draw() {
+      
+    }
+  <\/script>
+</body>
+</html>`,
+        landing: `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ediKing</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      font-family: system-ui;
+      font-size: 1.5em;
+      margin: 0;
+      min-height: 100vh;
+      min-height: 100dvh;
+    }
+    
+    div {
+      align-items: center;
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+      text-align: center;
+      width: 100%;
+    }
+    
+    div > * {
+      flex-grow: 1;
+      line-height: max(100%, 2rem);
+      margin-block: 1rem;
+      margin-inline: 1rem;
+      max-width: 70ch;
+    }
+    
+    a {
+      color: inherit;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+  <div style="background-color: darkred; color: pink; font-family: Georgia, serif;">
+    <p style="font-size: 4em;">Hi!</p>
+    <p>I'm a website.</p>
+    <p>And I live in the URL.</p>
+  </div>
+  <div style="background-color: #ffbb00; color: black;">
+    <p>You can edit my code in the adjacent editor.</p>
+    <p>If you got <b>Chrome desktop 138+</b>, <b>22 GB disk space</b>, and <b>4 GB GPU</b>... you can use the built-in <b>Gemini Nano LLM</b> to write and edit code. Autovibe mode included.</p>
+    <p>By the way, everything here is 100% client-side.</p>
+  </div>
+  <div style="background-color: blue; color: #00ff00;">
+    <p><a href="https://tfi.la/e#recur">Fun with recursion</a></p>
+    <p><a href="https://tfi.la/e?loop=1&prompt=Communicate+with+the+aliens+using+text%2C+shapes+and+colors.+Change+the+prevoius+message+and+make+it+even+more+psychedelic%21#%3C!DOCTYPE%20html%3E%0A%3Chtml%20lang%3D%22en%22%3E%0A%3Cbody%3E%0A%3Ch1%3EMessage%20to%20the%20aliens...%3C%2Fh1%3E%0A%3C%2Fbody%3E%0A%3C%2Fhtml%3E">Alien translation airlock</a><br><small>(requires LLM)</small></p>
+    <p><a href="https://github.com/eyaler/ediking">The code behind the code</a></p>
+    <p><small>Made by</small><br><a href="https://eyalgruss.com">Eyal Gruss</a></p>
+  </div>
+</body>
+</html>`,
+    }
     
     const iframe = document.createElement('iframe')  // Add iframe dynamically to avoid empty iframe on navigation in Firefox
     
+    function log(...args) {
+      const doc = iframe.contentDocument
+      const html = doc.documentElement
+      let log_elem = doc.getElementById('log_elem')
+      if (!log_elem) {
+        const body = doc.body || html.appendChild(doc.createElement('body'))
+        log_elem = body.appendChild(doc.createElement('pre'))
+        log_elem.id = 'log_elem'
+        log_elem.style.font = '16px monospace'
+        log_elem.style.overflowWrap = 'break-word'
+        log_elem.style.whiteSpace = 'pre-wrap'
+      }
+      log_elem.textContent += args.map(x => typeof x == 'object' ? JSON.stringify(x) : String(x)).join(' ') + '\n'
+      html.scrollTop = html.scrollHeight
+    }
+    
+    function clear() {
+      const log_elem = doc.getElementById('log_elem')
+      if (log_elem)
+        log_elem.textContent = ''
+    }
+    
     function get_url_param(param='disp') {
-      let val = new URLSearchParams(location.search).get(param)
-      return isNaN(val) ? val : +val
+      let val = new URLSearchParams(location.search).get(param) ?? 0
+      return isFinite(val) ? +val : val
     }
     
     function set_history_state(url, push) {
@@ -313,7 +385,7 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
           history.pushState(history.state, '', url)
         else
           history.replaceState(history.state, '', url)
-      } catch { }  // for iframes
+      } catch {}  // for iframes
     }
     
     function fix_disp_param() {
@@ -341,11 +413,13 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
         controls.classList.toggle('hide', disp == 3)
         check_model()
         if (hash == '#recur')
-          code.value = document.documentElement.outerHTML.replaceAll("'#recur'", 'hash')
+          code.value = document.documentElement.outerHTML.replaceAll("== '#recur'", "|| '#recur'")
         else if (hash)
           code.value = decodeURIComponent(hash.slice(1))
-        else
-          code.value = landing_html
+        else {
+          const temp = get_url_param('temp')
+          code.value = templates[temp == 0 ? 'landing' : temp]
+        }
       }
       active_before_update = document.activeElement
       iframe.srcdoc = code.value
@@ -616,9 +690,15 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
     // New, open, save, share
     
     function new_editor(e) {
-      let url = location.pathname
-      if (get_url_param('noai'))
-        url += '?noai=1'
+      const search = new URLSearchParams(location.search)
+      ;[...search.keys()].forEach(k => {
+        if (!persistent_params.includes(k))
+          search.delete(k)
+      })
+      if (!search.has('temp') && !['landing', null].includes(default_template))
+        search.set('temp', default_template)
+      const url = location.pathname + '?' + search
+
       if (e.ctrlKey || e.metaKey || e.button == 1)
         window.open(url, '_blank')
       else {
