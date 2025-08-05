@@ -840,17 +840,17 @@ function windowResized() {
       if (document.execCommand && (e.key == 'Enter' || e.key == 'Tab') && !e.altKey && !e.getModifierState?.('AltGraph') && !e.ctrlKey && !e.metaKey) {
         e.preventDefault()
         const textarea = e.target
-        const start = textarea.selectionStart
         const text = textarea.value
+        const start = textarea.selectionStart
+        let end = textarea.selectionEnd
         if (e.key == 'Enter') {
           let slice_end
-          if (e.shiftKey)
-            textarea.selectionStart = textarea.selectionEnd = (text + '\n').indexOf('\n', start)
+          if (e.shiftKey)  // Start new line with indentation below cursor (ignore selection)
+            textarea.selectionStart = textarea.selectionEnd = (text + '\n').indexOf('\n', textarea.selectionDirection == 'backward' ? start : end)
           else
             slice_end = start
           document.execCommand('insertText', false, '\n' + text.slice(text.lastIndexOf('\n', start - 1) + 1, slice_end).match(/^[ \t]*/))
         } else if (e.key == 'Tab') {
-          let end = textarea.selectionEnd
           textarea.selectionEnd = start
           if (!e.shiftKey)
             document.execCommand('insertText', false, '\t')
