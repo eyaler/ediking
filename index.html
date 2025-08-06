@@ -224,7 +224,7 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
     <input id="open_button" type="file" multiple>
     <label for="open_button" tabindex="0" title="Open file(s)">&#x1f4c2;&#xfe0e;</label>
     <button onclick="save()" aria-keyshortcuts="Ctrl+S" title="Save file [Ctrl+S]">&#x1f4be;&#xfe0e;</button>
-    <button id="share_button" onclick="share(event.ctrlKey || event.metaKey || event.button == 1)" title="Share (or [Ctrl+Click] to copy sharable link)">&#x1f517;</button>
+    <button id="share_button" onclick="share(event.ctrlKey || event.metaKey || event.button == 1)" title="Share (or [Ctrl+Click] to copy link as HTML)">&#x1f517;</button>
     <a href="https://github.com/eyaler/ediking" target="_blank" title="GitHub">&#x1f431;</a>
   </div>
   
@@ -368,6 +368,14 @@ function windowResized() {
     
     function clear() {
       iframe.contentDocument.getElementById('log_elem')?.remove()
+    }
+    
+    function get_code() {
+      return code.value
+    }
+    
+    function get_prompt() {
+      return prom.value
     }
     
     function get_url_param(param='disp') {
@@ -776,11 +784,13 @@ function windowResized() {
     }
     
     if (!navigator.share) {
-      share_button.title = 'Copy shareable link'
+      share_button.title = 'Copy link as HTML'
     }
     
     function share(mod) {
-      (!mod && navigator.share?.({url: location.href}).catch(() => {})) || navigator.clipboard.writeText(location.href)
+      (!mod && navigator.share?.({url: location, text: location, title: document.title}).catch(() => {}))
+       || navigator.clipboard.write?.([new ClipboardItem({'text/html': new Blob([`<a href="${location}">${location}</a>`], {type: 'text/html'}), 'text/plain': new Blob([location], {type: 'text/plain'})})])
+       || navigator.clipboard.writeText(location)
     }
     
     
