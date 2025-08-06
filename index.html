@@ -240,6 +240,7 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
     const min_font_size_factor = .1
     const max_font_size_factor = 10
     const persistent_params = ['temp', 'noai']
+    const max_safe_iters = 1000
     const default_template = ''
     
     const templates = {
@@ -362,8 +363,22 @@ function windowResized() {
         log_elem.style.overflowWrap = 'break-word'
         log_elem.style.whiteSpace = 'pre-wrap'
       }
-      log_elem.textContent += args.map(x => typeof x == 'object' ? JSON.stringify(x) : String(x)).join(' ') + '\n'
+      log_elem.textContent += args.map(x => typeof x == 'object' ? JSON.stringify(x) : String(x)).join(' ')
+      if (args.length)
+        log_elem.textContent += '\n'
       html.scrollTop = html.scrollHeight
+      return log_elem
+    }
+    
+    function safelog(...args) {
+      const log_elem = log(...args)
+      log_elem.dataCounter ??= 0
+      if (++log_elem.dataCounter > max_safe_iters) {
+        const err = 'Suspected infinite loop broken'
+        log('Error:', err)
+        throw Error(err)
+      }
+      return log_elem
     }
     
     function clear() {
