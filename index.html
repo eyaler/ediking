@@ -854,9 +854,21 @@ function windowResized() {
           textarea.selectionEnd = start
           if (!e.shiftKey)
             document.execCommand('insertText', false, '\t')
-          else if (text[start - 1]?.match(/[ \t]/))
+          else if (start > 1 && text.slice(start - 2, start).match(/  /)) {
             document.execCommand('delete')
-          else if (text[start].match(/[ \t]/)) {
+            document.execCommand('delete')
+          } else if (start && text.slice(start - 1, start + 1).match(/  /)) {
+            document.execCommand('delete')
+            document.execCommand('forwardDelete')
+            end -= end > start
+          } else if (text[start - 1]?.match(/[ \t]/))
+            document.execCommand('delete')
+          else if (text.slice(start, start + 2).match(/  /)) {
+            document.execCommand('forwardDelete')
+            document.execCommand('forwardDelete')
+            end -= end > start
+            end -= end > start
+          } else if (text[start].match(/[ \t]/)) {
             document.execCommand('forwardDelete')
             end -= end > start
           }
