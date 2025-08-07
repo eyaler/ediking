@@ -370,16 +370,20 @@ function windowResized() {
       return log_elem
     }
     
-    function safelog(...args) {
+    function safeLog(...args) {
       const log_elem = log(...args)
-      log_elem.dataCounter ??= 0
-      if (++log_elem.dataCounter > max_safe_iters) {
-        const err = 'Suspected infinite loop broken'
+      const key = 'data-' + JSON.stringify(Error().stack).toLowerCase().replace(/[^a-z0-9-]+/g, '').slice(-100)
+      const cnt = (log_elem.getAttribute(key)|0) + 1
+      if (cnt > max_safe_iters) {
+        const err = `Suspected infinite loop stopped after ${cnt} iterations`
         log('Error:', err)
         throw Error(err)
       }
+      log_elem.setAttribute(key, cnt)
       return log_elem
     }
+    
+    var safelog = safeLog
     
     function clear() {
       iframe.contentDocument.getElementById('log_elem')?.remove()
@@ -840,10 +844,10 @@ function windowResized() {
 
     function global_keys_handler(e) {
       const layout_key = get_layout_key(e)
-      if (!e.altKey && !e.getModifierState?.('AltGraph') && (e.ctrlKey || e.metaKey) && (
-          layout_key == 'f' && e.shiftKey ||
-          e.key == 'Enter' && writer && rewriter ||
-          layout_key == 's' && !e.shiftKey)) {
+      if (!e.altKey && !e.getModifierState?.('AltGraph') && (e.ctrlKey || e.metaKey)
+          && (layout_key == 'f' && e.shiftKey
+              || e.key == 'Enter' && writer && rewriter
+              || layout_key == 's' && !e.shiftKey)) {
         e.preventDefault()
         if (layout_key == 'f')
           full.click()

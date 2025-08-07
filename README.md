@@ -30,7 +30,7 @@ Short link: [tfi.la/e](https://tfi.la/e)
 - Add `target="_blank"` to `a` links of different origin, to allow opening from iframe
 - Grab title and favicon from iframe
 - Prevent top level navigation when file dropped on iframe
-- Helper functions for output in iframe: `parent.clear()`, `parent.log()`, `parent.safelog()` (infinite loop protection)
+- Helper functions for output in iframe: `parent.clear()`, `parent.log()`, `parent.safeLog()` / `parent.safelog()` (infinite loop protection)
 
 ### Things I may add
 - Compress the code and prompt saved in the URL
