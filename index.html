@@ -878,26 +878,35 @@ function windowResized() {
             textarea.selectionStart = textarea.selectionEnd = (text + '\n').indexOf('\n', textarea.selectionDirection == 'backward' ? start : end)
           else
             slice_end = start
-          document.execCommand('insertText', false, '\n' + text.slice(text.lastIndexOf('\n', start - 1) + 1, slice_end).match(/^[ \t]*/))
+          const line_start = text.lastIndexOf('\n', start - 1) + 1
+          let indent = '\n' + text.slice(line_start, slice_end).match(/^[ \t]*/)
+          if (text.slice(line_start, textarea.selectionStart).match(/([{[(:]|=>)\s*$/))
+            indent += indent.endsWith(' ') ? '  ' : '\t'
+          document.execCommand('insertText', false, indent)
         } else if (e.key == 'Tab') {
           textarea.selectionEnd = start
           if (!e.shiftKey)
             document.execCommand('insertText', false, '\t')
-          else if (start > 1 && text.slice(start - 2, start).match(/  /)) {
+          else if (text[start - 1] == '\t')
+            document.execCommand('delete')
+          else if (text[start] == '\t') {
+            document.execCommand('forwardDelete')
+            end -= end > start
+          } else if (start > 1 && text.slice(start - 2, start) == '  ') {
             document.execCommand('delete')
             document.execCommand('delete')
-          } else if (start && text.slice(start - 1, start + 1).match(/  /)) {
+          } else if (start && text.slice(start - 1, start + 1) == '  ') {
             document.execCommand('delete')
             document.execCommand('forwardDelete')
             end -= end > start
-          } else if (text[start - 1]?.match(/[ \t]/))
+          } else if (text[start - 1] == ' ')
             document.execCommand('delete')
-          else if (text.slice(start, start + 2).match(/  /)) {
+          else if (text.slice(start, start + 2) == '  ') {
             document.execCommand('forwardDelete')
             document.execCommand('forwardDelete')
             end -= end > start
             end -= end > start
-          } else if (text[start].match(/[ \t]/)) {
+          } else if (text[start] == ' ') {
             document.execCommand('forwardDelete')
             end -= end > start
           }
