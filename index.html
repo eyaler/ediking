@@ -243,7 +243,7 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
     const max_safe_iters = 1000
     const default_template = ''
     
-    const templates = {
+    const templates = {  // Use '  ' (two spaces; will be removed) to denote caret location
         '': ``,
         html: `<!DOCTYPE html>
 <html lang="en">
@@ -260,19 +260,19 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
 	</style>
 </head>
 <body>
-	
+	  
 </body>
 </html>`,
         js: `<script>
 
-
+  
 
 <\/script>`,
         p5: `<script src="https://cdn.jsdelivr.net/npm/p5"><\/script>
 <style>body {margin: 0} canvas {display: block}</style>
 <script>
 // Globals:
-
+  
 
 function setup() {
 	createCanvas(windowWidth, windowHeight)
@@ -398,8 +398,10 @@ function windowResized() {
     }
     
     function get_url_param(param='disp') {
-      let val = new URLSearchParams(location.search).get(param) ?? 0
-      return isFinite(val) ? +val : val
+      const val = new URLSearchParams(location.search).get(param)
+      if (val == '')
+        return ''
+      return isNaN(val) ? val : +val
     }
     
     function set_history_state(url, push) {
@@ -440,8 +442,10 @@ function windowResized() {
         else if (hash)
           code.value = decodeURIComponent(hash.slice(1))
         else {
-          const temp = get_url_param('temp')
-          code.value = templates[temp == 0 ? 'landing' : temp]
+          const temp = templates[get_url_param('temp') ?? 'landing']
+          const caret = Math.max(temp.indexOf('  '), 0)
+          code.value = temp.replace('  ', '')
+          code.setSelectionRange(caret, caret)
         }
       }
       active_before_update = document.activeElement
