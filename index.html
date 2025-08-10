@@ -736,6 +736,7 @@ function windowResized() {
         set_history_state(location, true)
         controller?.abort('nav')
         set_history_state(url)
+        code.focus()
         update('')
       }
     }
