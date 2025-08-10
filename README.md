@@ -2,6 +2,8 @@
 ### A client-side HTML editor
 Short link: [tfi.la/e](https://tfi.la/e)
 
+For teaching p5.js: [tfi.la/p5](https://tfi.la/p5)  (p5.js template + disable LLM)
+
 ### Keys and gestures
 - `Ctrl`+`Shift`+`F` - Show / hide editor (full screen)
 - `Ctrl`+`Enter` - Run / stop generation (when LLM is available)
@@ -11,7 +13,7 @@ Short link: [tfi.la/e](https://tfi.la/e)
 - `Tab`, `Shift`+`Tab`, `Enter`, `Shift`+`Enter` (start new line) - Indentation at cursor location (not line-level but preserves undo stack)
 - Drag and drop file(s) over editor - Open and add HTML tags for CSS and JS, `.prompt` files loaded to prompt (as raw text)
 
-### URL API (auto-synced)
+### URL API (synced with GUI)
 - `#...` - Code
 - `?disp` - Hide editor
 - `?disp=2` - Hide editor, no show/hide button, global `Ctrl` keyboard shortcuts work
