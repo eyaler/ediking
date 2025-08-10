@@ -13,16 +13,16 @@ Short link: [tfi.la/e](https://tfi.la/e)
 
 ### URL API (auto-synced)
 - `#...` - Code
-- `?disp=1` - Hide editor
+- `?disp` - Hide editor
 - `?disp=2` - Hide editor, no show/hide button, global `Ctrl` keyboard shortcuts work
 - `?disp=3` - Hide editor, no show/hide button, no keyboard shortcut
-- [`?temp=`](https://tfi.la/e?temp=) - Empty
+- [`?temp`](https://tfi.la/e?temp) - Empty
 - [`?temp=html`](https://tfi.la/e?temp=html) - HTML template
 - [`?temp=js`](https://tfi.la/e?temp=js) - JS template
 - [`?temp=p5`](https://tfi.la/e?temp=p5) - p5.js template
 - `?prompt=...` - Prompt (when LLM is available)
-- `?loop=1` - Looping generation (when LLM is available)
-- [`?noai=1`](https://tfi.la/e?noai=1) - Disable LLM (aka student mode)
+- `?loop` - Looping generation (when LLM is available)
+- [`?noai`](https://tfi.la/e?noai) - Disable LLM (aka student mode)
 
 ### iframe convenience features
 - Prevent iframe from stealing focus on load
@@ -70,4 +70,4 @@ Short link: [tfi.la/e](https://tfi.la/e)
 
 ### Fun
 - Recursion: https://tfi.la/e#recur (LLM is disabled to prevent browser crash)
-- Alien translation airlock: https://tfi.la/e?loop=1&prompt=Communicate+with+the+aliens+using+text%2C+shapes+and+colors.+Change+the+prevoius+message+and+make+it+even+more+psychedelic%21#%3C!DOCTYPE%20html%3E%0A%3Chtml%20lang%3D%22en%22%3E%0A%3Cbody%3E%0A%3Ch1%3EMessage%20to%20the%20aliens...%3C%2Fh1%3E%0A%3C%2Fbody%3E%0A%3C%2Fhtml%3E (when LLM is available)
+- Alien translation airlock: https://tfi.la/e?loop&prompt=Communicate+with+the+aliens+using+text%2C+shapes+and+colors.+Change+the+prevoius+message+and+make+it+even+more+psychedelic%21#%3C!DOCTYPE%20html%3E%0A%3Chtml%20lang%3D%22en%22%3E%0A%3Cbody%3E%0A%3Ch1%3EMessage%20to%20the%20aliens...%3C%2Fh1%3E%0A%3C%2Fbody%3E%0A%3C%2Fhtml%3E (when LLM is available)

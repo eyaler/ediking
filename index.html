@@ -241,10 +241,10 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
     const max_font_size_factor = 10
     const persistent_params = ['temp', 'noai']
     const max_safe_iters = 1000
-    const default_template = ''
+    const default_template = 'html'
     
     const templates = {  // Use '  ' (two spaces; will be removed) to denote caret location
-        '': ``,
+        1: ``,
         html: `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -287,7 +287,7 @@ function windowResized() {
 	resizeCanvas(windowWidth, windowHeight)
 }
 <\/script>`,
-        landing: `<!DOCTYPE html>
+        0: `<!DOCTYPE html>
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
@@ -340,7 +340,7 @@ function windowResized() {
 	</div>
 	<div style="background-color: blue; color: #00ff00;">
 		<p><a href="https://tfi.la/e#recur">Fun with recursion</a></p>
-		<p><a href="https://tfi.la/e?loop=1&prompt=Communicate+with+the+aliens+using+text%2C+shapes+and+colors.+Change+the+prevoius+message+and+make+it+even+more+psychedelic%21#%3C!DOCTYPE%20html%3E%0A%3Chtml%20lang%3D%22en%22%3E%0A%3Cbody%3E%0A%3Ch1%3EMessage%20to%20the%20aliens...%3C%2Fh1%3E%0A%3C%2Fbody%3E%0A%3C%2Fhtml%3E">Alien translation airlock</a><br><small>(requires LLM)</small></p>
+		<p><a href="https://tfi.la/e?loop&prompt=Communicate+with+the+aliens+using+text%2C+shapes+and+colors.+Change+the+prevoius+message+and+make+it+even+more+psychedelic%21#%3C!DOCTYPE%20html%3E%0A%3Chtml%20lang%3D%22en%22%3E%0A%3Cbody%3E%0A%3Ch1%3EMessage%20to%20the%20aliens...%3C%2Fh1%3E%0A%3C%2Fbody%3E%0A%3C%2Fhtml%3E">Alien translation airlock</a><br><small>(requires LLM)</small></p>
 		<p><a href="https://github.com/eyaler/ediking">The code behind the code</a></p>
 		<p><small>Made by</small><br><a href="https://eyalgruss.com">Eyal Gruss</a></p>
 	</div>
@@ -399,9 +399,9 @@ function windowResized() {
     
     function get_url_param(param='disp') {
       const val = new URLSearchParams(location.search).get(param)
-      if (val == '')
-        return ''
-      return isNaN(val) ? val : +val
+      if (param == 'prompt')
+        return val ?? ''
+      return val == '' ? 1 : isNaN(val) ? val : +val
     }
     
     function set_history_state(url, push) {
@@ -420,7 +420,7 @@ function windowResized() {
         if (disp)
           url.searchParams.delete('disp')
         else
-          url.searchParams.set('disp', 1)
+          url.searchParams.set('disp', '')
         set_history_state(url)
       }
     }
@@ -442,7 +442,7 @@ function windowResized() {
         else if (hash)
           code.value = decodeURIComponent(hash.slice(1))
         else {
-          const temp = templates[get_url_param('temp') ?? 'landing']
+          const temp = templates[get_url_param('temp')]
           const caret = Math.max(temp.indexOf('  '), 0)
           code.value = temp.replace('  ', '')
           code.setSelectionRange(caret, caret)
@@ -536,7 +536,7 @@ function windowResized() {
         }
       } else if (writer_availability == 'available' && rewriter_availability == 'available')
         if (llm.checked)
-          prom.value = get_url_param('prompt') || ''
+          prom.value = get_url_param('prompt')
         else
           llm.click()
       else if (!recheck)
@@ -573,7 +573,7 @@ function windowResized() {
               rewriter = await Rewriter.create({...monitor_opt, ...shared_context})
             }
             if (writer && rewriter) {
-              prom.value = get_url_param('prompt') || ''
+              prom.value = get_url_param('prompt')
               prom.readOnly = false
               run_stop.classList.remove('hide')
               if (get_url_param('loop'))
@@ -613,7 +613,7 @@ function windowResized() {
       if (!loop)
         url.searchParams.delete('loop')
       else
-        url.searchParams.set('loop', 1)
+        url.searchParams.set('loop', '')
       set_history_state(url)
       
       if (!run_stop.classList.contains('running') || mod == null) {
@@ -726,7 +726,7 @@ function windowResized() {
         if (!persistent_params.includes(k))
           search.delete(k)
       })
-      if (!search.has('temp') && !['landing', null].includes(default_template))
+      if (!search.has('temp') && default_template)
         search.set('temp', default_template)
       const url = location.pathname + '?' + search
 
