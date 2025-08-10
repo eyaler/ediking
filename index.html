@@ -449,6 +449,7 @@ function windowResized() {
         }
       }
       active_before_update = document.activeElement
+      console.clear()
       iframe.srcdoc = code.value
       editor.after(iframe)
       set_history_state('#' + encodeURIComponent(code.value))
