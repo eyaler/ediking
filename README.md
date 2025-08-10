@@ -43,7 +43,9 @@ For teaching p5.js: [tfi.la/p5](https://tfi.la/p5)  (p5.js template + disable LL
 - Syntax highlighting and other code editor niceties
 
 ### Experimental Writer / Rewriter Chrome API integration
-- Requires Chrome desktop 138+, 22 GB disk space, and 4 GB GPU (see: https://developer.chrome.com/docs/ai/writer-api)
+- Models and requirements:
+  - Gemini Nano: Chrome desktop 138+, 22 GB disk space, and 4 GB GPU (https://developer.chrome.com/docs/ai/writer-api)
+  - Phi-4-mini: Edge desktop 139+, 20 GB disk space, and 5.5 GB GPU (https://learn.microsoft.com/sr-latn-rs/microsoft-edge/web-platform/writing-assistance-apis)
 - API explainer: https://github.com/webmachinelearning/writing-assistance-apis
 - LLM patterns used here:
   1. __Write from scratch__: no code -> `write(fullcode_prompt + prompt)`
