@@ -270,7 +270,7 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
 <\/script>`,
         p5: `<script src="https://cdn.jsdelivr.net/npm/p5"><\/script>
 <style>body {margin: 0} canvas {display: block}</style>
-<script>
+<script>'use strict'
 // Globals:
   
 
@@ -366,7 +366,7 @@ function windowResized() {
       log_elem.textContent += args.map(x => typeof x == 'object' ? JSON.stringify(x) : String(x)).join(' ')
       if (args.length)
         log_elem.textContent += '\n'
-      html.scrollTop = html.scrollHeight
+      log_elem.scrollIntoView(false)
       return log_elem
     }
     
