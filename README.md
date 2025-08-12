@@ -26,6 +26,7 @@ For teaching p5.js: [tfi.la/p5](https://tfi.la/p5)  (p5.js template + disable LL
 - [`?temp=html`](https://tfi.la/e?temp=html) - HTML template
 - [`?temp=js`](https://tfi.la/e?temp=js) - JS template
 - [`?temp=p5`](https://tfi.la/e?temp=p5) - p5.js template
+- [`?temp=q5`](https://tfi.la/e?temp=q5) - q5.js template
 
 
 - `?prompt=...` - Prompt (when LLM is available)
