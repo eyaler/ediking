@@ -340,7 +340,7 @@ function windowResized() {
 	</div>
 	<div style="background-color: blue; color: #00ff00;">
 		<p><a href="https://tfi.la/e#recur">Fun with recursion</a></p>
-		<p><a href="https://tfi.la/e?loop&prompt=Communicate+with+the+aliens+using+text%2C+shapes+and+colors.+Change+the+prevoius+message+and+make+it+even+more+psychedelic%21#%3C!DOCTYPE%20html%3E%0A%3Chtml%20lang%3D%22en%22%3E%0A%3Cbody%3E%0A%3Ch1%3EMessage%20to%20the%20aliens...%3C%2Fh1%3E%0A%3C%2Fbody%3E%0A%3C%2Fhtml%3E">Alien translation airlock</a><br><small>(requires LLM)</small></p>
+		<p><a href="https://tfi.la/e?loop&prompt=Communicate+with+the+aliens+using+text%2C+shapes+and+colors.+Change+the+previous+message+and+make+it+even+more+psychedelic%21#%3C!DOCTYPE%20html%3E%0A%3Chtml%20lang%3D%22en%22%3E%0A%3Cbody%3E%0A%3Ch1%3EMessage%20to%20the%20aliens...%3C%2Fh1%3E%0A%3C%2Fbody%3E%0A%3C%2Fhtml%3E">Alien translation airlock</a><br><small>(requires LLM)</small></p>
 		<p><a href="https://github.com/eyaler/ediking">The code behind the code</a></p>
 		<p><small>Made by</small><br><a href="https://eyalgruss.com">Eyal Gruss</a></p>
 	</div>
@@ -413,16 +413,20 @@ function windowResized() {
       } catch {}  // For iframes
     }
     
+    function set_url_param(key, val) {
+      const url = new URL(location)
+      if (val)
+        url.searchParams.set(key, val === true ? '' : val)
+      else
+        url.searchParams.delete(key)
+      set_history_state(url)
+      return url
+    }
+    
     function fix_disp_param() {
       const disp = get_url_param()
-      if (!full.checked && disp == 1 || full.checked && !disp) {
-        const url = new URL(location)
-        if (disp)
-          url.searchParams.delete('disp')
-        else
-          url.searchParams.set('disp', '')
-        set_history_state(url)
-      }
+      if (!disp && full.checked || disp == 1 && !full.checked)
+        set_url_param('disp', full.checked)
     }
     
     function update(hash, pop) {
@@ -450,7 +454,11 @@ function windowResized() {
       }
       active_before_update = document.activeElement
       console.clear()
-      iframe.srcdoc = code.value
+      if (get_url_param('pause')) {
+        set_url_param('pause', false)
+        iframe.srcdoc = ''
+      } else
+        iframe.srcdoc = code.value
       editor.after(iframe)
       set_history_state('#' + encodeURIComponent(code.value))
       if (decodeURIComponent(location.hash.slice(1)) != code.value && self == top)
@@ -461,12 +469,7 @@ function windowResized() {
     prom.addEventListener('focus', () => prom_active = true)
     
     prom.addEventListener('input', () => {
-      const url = new URL(location)
-      if (!prom.value)
-        url.searchParams.delete('prompt')
-      else
-        url.searchParams.set('prompt', prom.value)
-      set_history_state(url)
+      set_url_param('prompt', prom.value)
       if (prom.value && new URL(location).searchParams.get('prompt') != prom.value && self == top)
         alert(`Too much data to save in URL - truncated to ${location.href.length} chars.`)
     })
@@ -609,13 +612,7 @@ function windowResized() {
         loop = false
       run_stop.classList.toggle('loop', loop)
       was_loop ||= loop
-      
-      const url = new URL(location)
-      if (!loop)
-        url.searchParams.delete('loop')
-      else
-        url.searchParams.set('loop', '')
-      set_history_state(url)
+      const url = set_url_param('loop', loop)
       
       if (!run_stop.classList.contains('running') || mod == null) {
         if (!llm.checked && mod != null)
@@ -730,7 +727,7 @@ function windowResized() {
       if (!search.has('temp') && default_template)
         search.set('temp', default_template)
       const url = location.pathname + '?' + search
-
+      
       if (e.ctrlKey || e.metaKey || e.button == 1)
         window.open(url, '_blank')
       else {

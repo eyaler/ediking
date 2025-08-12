@@ -15,16 +15,25 @@ For teaching p5.js: [tfi.la/p5](https://tfi.la/p5)  (p5.js template + disable LL
 
 ### URL API (synced with GUI)
 - `#...` - Code
+
+
 - `?disp` - Hide editor
 - `?disp=2` - Hide editor, no show/hide button, global `Ctrl` keyboard shortcuts work
 - `?disp=3` - Hide editor, no show/hide button, no keyboard shortcut
+
+
 - [`?temp`](https://tfi.la/e?temp) - Empty
 - [`?temp=html`](https://tfi.la/e?temp=html) - HTML template
 - [`?temp=js`](https://tfi.la/e?temp=js) - JS template
 - [`?temp=p5`](https://tfi.la/e?temp=p5) - p5.js template
+
+
 - `?prompt=...` - Prompt (when LLM is available)
 - `?loop` - Looping generation (when LLM is available)
 - [`?noai`](https://tfi.la/e?noai) - Disable LLM (aka student mode)
+
+
+- `?pause` - delay loading code into iframe until next edit
 
 ### iframe convenience features
 - Prevent iframe from stealing focus on load
