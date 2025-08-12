@@ -39,7 +39,7 @@ For teaching p5.js: [tfi.la/p5](https://tfi.la/p5)  (p5.js template + disable LL
 - Prevent iframe from stealing focus on load
 - Have iframe listen to the global `Ctrl` keyboard shortcuts
 - Add `target="_blank"` to `a` links of different origin, to allow opening from iframe
-- Grab title and favicon from iframe
+- Grab title, description and favicon from iframe
 - Prevent top level navigation when file dropped on iframe
 - Helper functions for output in iframe: `parent.clear()`, `parent.log()`, `parent.safeLog()` / `parent.safelog()` (infinite loop protection)
 

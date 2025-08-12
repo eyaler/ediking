@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="origin-trial" content="AkJhKw11U0oD/cBDmd0l8xGbgR1NrdsD8U+0k65KGHaBABshLRJ3FPp+M2QFjru6LdtS5BCIrw1wXGaldN6LEgYAAABVeyJvcmlnaW4iOiJodHRwczovL2lvLmV5YWxncnVzcy5jb206NDQzIiwiZmVhdHVyZSI6IkFJV3JpdGVyQVBJIiwiZXhwaXJ5IjoxNzY5NDcyMDAwfQ==">
   <meta http-equiv="origin-trial" content="AlLaBwduz2ip9mxvIOb5LpctBl11hu52Zfta6BsI4byS7llxpalNd3prA0UuSE0L4uYcNQcr5pMvgzrkf0+2nwwAAABXeyJvcmlnaW4iOiJodHRwczovL2lvLmV5YWxncnVzcy5jb206NDQzIiwiZmVhdHVyZSI6IkFJUmV3cml0ZXJBUEkiLCJleHBpcnkiOjE3Njk0NzIwMDB9">
+  
   <style>
     :root {
       color-scheme: light dark;
@@ -292,7 +293,6 @@ function windowResized() {
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>ediKing</title>
 	<style>
 		body {
 			display: flex;
@@ -481,18 +481,20 @@ function windowResized() {
     
     iframe.addEventListener('load', () => {
       active_before_update?.focus()
-      const title = iframe.contentDocument.title
-      if (title)
-        document.title = title
+      const doc = iframe.contentDocument
+      document.title = doc.title || 'ediKing'
+      const meta = document.querySelector('meta[name=description]') || document.head.appendChild(document.createElement('meta'))
+      meta.content = doc.querySelector('meta[name=description]')?.content ?? 'ediKing - A client-side HTML editor'
+      meta.name = 'description'
       document.head.querySelectorAll('link[rel=icon]').forEach(e => e.remove())
-      iframe.contentDocument.head.querySelectorAll('link[rel=icon]').forEach(e => document.head.appendChild(e))
-      iframe.contentDocument.querySelectorAll('a').forEach(a => {
+      doc.head.querySelectorAll('link[rel=icon]').forEach(e => document.head.appendChild(e))
+      doc.querySelectorAll('a').forEach(a => {
         if (a.origin != location.origin)
           a.target = '_blank'
       })
       if (get_url_param() < 3)
-        iframe.contentDocument.addEventListener('keydown', global_keys_handler, true)
-      ;['dragover', 'drop'].forEach(e => iframe.contentDocument.addEventListener(e, block_drop_nav, true))
+        doc.addEventListener('keydown', global_keys_handler, true)
+      ;['dragover', 'drop'].forEach(e => doc.addEventListener(e, block_drop_nav, true))
     })
     
     
