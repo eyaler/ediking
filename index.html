@@ -460,7 +460,7 @@ function windowResized() {
         else if (hash)
           code.value = decodeURIComponent(hash.slice(1))
         else {
-          const temp = templates[get_url_param('temp')]
+          const temp = templates[get_url_param('temp')] ?? templates[0]
           const caret = Math.max(temp.indexOf('  '), 0)
           code.value = temp.replace('  ', '')
           code.setSelectionRange(caret, caret)
