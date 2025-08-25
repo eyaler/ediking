@@ -5,20 +5,26 @@ Short link: [tfi.la/e](https://tfi.la/e)
 For teaching p5.js: [tfi.la/p5](https://tfi.la/p5)  (p5.js template + disable LLM)
 
 ### Keys and gestures
+#### Global
 - `Ctrl`+`Shift`+`F` - Show / hide editor (full screen)
 - `Ctrl`+`Enter` - Run / stop generation (when LLM is available)
 - `Ctrl`+`Shift`+`Enter` (or `Ctrl`+`Click` on the button) - Looping / no-loop generation (when LLM is available)
 - `Ctrl`+`S` - Save HTML file (currently rendered version)
 - `Alt`+`0`/`-`/`+` - Reset / decrease / increase editor font size
-- `Tab`, `Shift`+`Tab`, `Enter`, `Shift`+`Enter` (start new line) - Indentation at cursor location (not line-level but preserves undo stack)
-- Drag and drop file(s) over editor - Open and add HTML tags for CSS and JS, `.prompt` files loaded to prompt (as raw text)
+#### Editor text areas
+- `Tab`, `Shift`+`Tab` - Indent / unindent at caret or selection start
+- `Enter`, `Shift`+`Enter` - New line with current or coding-language-based extra indentation (`Shift` skips to line end beforehand)
+- `Home`, `Shift`+`Home` - Move caret to indentation; if already there, move to logical line start (`Shift` for selection) 
+- `End`, `Shift`+`End` - For wrapped lines, second press moves caret to logical line end (`Shift` for selection)
+- `Ctrl`+`C` with no selection - Duplicate line
+- Drag and drop file(s) - Open and add HTML tags for CSS and JS, `.prompt` files loaded to prompt (as raw text)
 
 ### URL API (synced with GUI)
 - `#...` - Code
 
 
 - `?disp` - Hide editor
-- `?disp=2` - Hide editor, no show/hide button, global `Ctrl` keyboard shortcuts work
+- `?disp=2` - Hide editor, no show/hide button, global keyboard shortcuts work
 - `?disp=3` - Hide editor, no show/hide button, no keyboard shortcut
 
 
@@ -35,22 +41,15 @@ For teaching p5.js: [tfi.la/p5](https://tfi.la/p5)  (p5.js template + disable LL
 
 
 - `?pause` - delay loading code into iframe until next edit
+- `?pause` - Delay loading code into iframe until next edit (to allow fixing bad code)
 
 ### iframe convenience features
 - Prevent iframe from stealing focus on load
-- Have iframe listen to the global `Ctrl` keyboard shortcuts
+- Have iframe listen to the global keyboard shortcuts
 - Add `target="_blank"` to `a` links of different origin, to allow opening from iframe
 - Grab title, description and favicon from iframe
 - Prevent top level navigation when file dropped on iframe
 - Helper functions for output in iframe: `parent.clear()`, `parent.log()`, `parent.safeLog()` / `parent.safelog()` (infinite loop protection)
-
-### Things I may add
-- Compress the code and prompt saved in the URL
-- Local storage for saner local persistence, and default/custom templates
-- Drag and drop HTML content and links to grab code
-- Direct editing of the iframe (aka designMode) reflected in the code editor
-- Use gunDB or Nostr for persistence, sharing and collaborative editing
-- Syntax highlighting and other code editor niceties
 
 ### Experimental Writer / Rewriter Chrome API integration
 - Models and requirements:
@@ -81,6 +80,15 @@ For teaching p5.js: [tfi.la/p5](https://tfi.la/p5)  (p5.js template + disable LL
   - Multimodal input of the rendered iframe screenshot
   - Parse `.prompt` files for system prompt and params
   - Allow LLM to generate its next prompt (can currently be emulated via generated code comments)
+
+### Other things I may add
+- Compress the code and prompt saved in the URL
+- Local storage for saner local persistence, and default/custom templates
+- Upload media files as data blobs
+- Drag and drop HTML content and links to grab code
+- Direct editing of the iframe (aka designMode) reflected in the code editor
+- Use gunDB or Nostr for persistence, sharing and collaborative editing
+- Multiline indentation, syntax highlighting and other code editor niceties
 
 ### Fun
 - Recursion: https://tfi.la/e#recur (LLM is disabled to prevent browser crash)

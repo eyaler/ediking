@@ -20,7 +20,7 @@
     }
     
     .hide,
-    #controls input,
+    #controls > input,
     #controls:has(#full:checked).conditional_hide,
     #controls:has(#full:checked) :not(:is(#full, #full + label)),
     #controls:has(#full:checked) ~ #editor,
@@ -30,6 +30,7 @@
     }
     
     #controls {
+      background-color: Canvas;
       display: flex;
       flex-direction: column;
       position: fixed;
@@ -48,8 +49,13 @@
     }
     
     @media (hover: hover) {
-      #controls > :is(:hover, :focus-visible) {
+      #controls > :hover {
         background-color: light-dark(#e0e0e0, #585858);
+      }
+      
+      #controls > :focus-visible {
+        outline-offset: -1px;
+        outline-style: solid;
       }
     }
     
@@ -82,7 +88,7 @@
     #run_stop::before {
       content: '\25b6\fe0e';
     }
-
+    
     #run_stop.running::before {
       content: '\2b1b\fe0e';
     }
@@ -102,6 +108,10 @@
     #editor {
       display: grid;
       --font_size_factor: 1;
+    }
+    
+    #controls:has(#wrap:not(:checked)) ~ #editor textarea {
+      white-space: pre;
     }
     
     iframe, textarea {
@@ -126,7 +136,7 @@
       max-width: 100vw;
       width: 50vw;
     }
-      
+    
     #prom {
       min-height: 0;
       min-width: 0;
@@ -194,7 +204,7 @@
       #code {
         min-height: 100%;
       }
-            
+      
       #controls:has(#llm:not(:checked)) ~ #editor #code {
         resize: vertical;
         width: 100vw !important;
@@ -211,13 +221,13 @@
   </style>
 </head>
 <body onload="update(location.hash)" onpopstate="update(location.hash, true)">
-  <div id="controls">
+  <div id="controls" onpointerdown="event.preventDefault()">
     <input id="full" type="checkbox" autocomplete="off" aria-controls="editor" aria-expanded="true" aria-keyshortcuts="Ctrl+Shift+F">
     <label for="full" tabindex="0" title="Show/hide editor [Ctrl+Shift+F]"></label>
     <input id="wrap" type="checkbox" checked autocomplete="off">
     <label for="wrap" tabindex="0" title="Word wrap">w</label>
     <input id="llm" type="checkbox" autocomplete="off" aria-controls="prom" aria-expanded="false">
-    <label for="llm" tabindex="0" title="Toggle LLm">&#x1f916;</label>
+    <label for="llm" tabindex="0" title="LLM">&#x1f916;</label>
     <button id="run_stop" onclick="generate(event.ctrlKey || event.metaKey || event.button == 1)" aria-keyshortcuts="Ctrl+Enter Ctrl+Shift+Enter" title="Run/stop generation [Ctrl+Enter]
 Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
     <button onclick="update()" title="Reload iframe">&#x27f3;</button>
@@ -226,6 +236,8 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
     <label for="open_button" tabindex="0" title="Open file(s)">&#x1f4c2;&#xfe0e;</label>
     <button onclick="save()" aria-keyshortcuts="Ctrl+S" title="Save file [Ctrl+S]">&#x1f4be;&#xfe0e;</button>
     <button id="share_button" onclick="share(event.ctrlKey || event.metaKey || event.button == 1)" title="Share (or [Ctrl+Click] to copy link as HTML)">&#x1f517;</button>
+    <button id="share_button" onclick="share(event.ctrlKey || event.metaKey || event.button == 1)" title="Share (or [Ctrl+Click] to copy link as HTML,
+and use Ctrl+V to paste in Moodle)">&#x1f517;</button>
     <a href="https://github.com/eyaler/ediking" target="_blank" title="GitHub">&#x1f431;</a>
   </div>
   
@@ -245,8 +257,8 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
     const default_template = 'html'
     
     const templates = {  // Use '  ' (two spaces; will be removed) to denote caret location
-        1: ``,
-        html: `<!DOCTYPE html>
+      1: ``,
+      html: `<!DOCTYPE html>
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
@@ -264,12 +276,12 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
 	  
 </body>
 </html>`,
-        js: `<script>
+      js: `<script>
 
   
 
 <\/script>`,
-        p5: `<script src="https://cdn.jsdelivr.net/npm/p5"><\/script>
+      p5: `<script src="https://cdn.jsdelivr.net/npm/p5"><\/script>
 <style>body {margin: 0} canvas {display: block}</style>
 <script>'use strict'
 // Globals:
@@ -288,7 +300,7 @@ function windowResized() {
 	resizeCanvas(windowWidth, windowHeight)
 }
 <\/script>`,
-        q5: `<script src="https://q5js.org/q5.min.js"><\/script>
+      q5: `<script src="https://q5js.org/q5.min.js"><\/script>
 <style>canvas {display: block}</style>
 <script>'use strict'
 createCanvas()
@@ -302,7 +314,7 @@ function windowResized() {
 	resizeCanvas()
 }
 <\/script>`,
-        0: `<!DOCTYPE html>
+      0: `<!DOCTYPE html>
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
@@ -372,7 +384,8 @@ function windowResized() {
         const body = doc.body || html.appendChild(doc.createElement('body'))
         log_elem = body.appendChild(doc.createElement('pre'))
         log_elem.id = 'log_elem'
-        log_elem.style.font = '16px monospace'
+        log_elem.style.setProperty('--font_size_factor', font_size_factor)
+        log_elem.style.font = 'calc(1rem * var(--font_size_factor)) monospace'
         log_elem.style.margin = '1rem .5rem'
         log_elem.style.overflowWrap = 'break-word'
         log_elem.style.whiteSpace = 'pre-wrap'
@@ -387,7 +400,7 @@ function windowResized() {
     function safeLog(...args) {
       const log_elem = log(...args)
       const key = 'data-' + JSON.stringify(Error().stack).toLowerCase().replace(/[^a-z0-9-]+/g, '').slice(-100)
-      const cnt = (log_elem.getAttribute(key)|0) + 1
+      const cnt = (log_elem.getAttribute(key) | 0) + 1
       if (cnt > max_safe_iters) {
         const err = `Suspected infinite loop stopped after ${cnt} iterations`
         log('Error:', err)
@@ -511,10 +524,7 @@ function windowResized() {
       ;['dragover', 'drop'].forEach(e => doc.addEventListener(e, block_drop_nav, true))
     })
     
-    
-    // Toggle buttons
-    
-    full.addEventListener('change', () => {
+    full.addEventListener('input', () => {
       fix_disp_param()
       full.ariaExpanded = !full.checked
       
@@ -526,24 +536,18 @@ function windowResized() {
       else
         code.focus()
     })
-  
-    function set_wrap() {
-      editor.querySelectorAll('textarea').forEach(e => e.style.whiteSpace = wrap.checked ? 'pre-wrap' : 'pre')
-    }
-    
-    wrap.addEventListener('change', () => set_wrap())
-    set_wrap()
     
     
     // LLM stuff
+    
     const chars_to_tokens = 2.5
     const shared_context = {sharedContext: 'Never use external files or remote media! Address any comments marked by FIXME, and remove them.'}
     const fullcode_prompt = 'Output only a complete single-file HTML code (including CSS/JS inside). Popular JS libraries can be used from CDN.'
     
     async function check_model(recheck) {
-      noai = get_url_param('noai') || location.hash == '#recur'
-      writer_availability = self.Writer && await Writer.availability()
-      rewriter_availability = self.Rewriter && await Rewriter.availability()
+      const noai = get_url_param('noai') || location.hash == '#recur'
+      const writer_availability = self.Writer && await Writer.availability()
+      const rewriter_availability = self.Rewriter && await Rewriter.availability()
       if (noai || !writer_availability || !rewriter_availability || writer_availability == 'unavailable' || rewriter_availability == 'unavailable') {
         llm.disabled = true
         const label = llm.nextElementSibling
@@ -822,7 +826,8 @@ function windowResized() {
     }
     
     if (!navigator.share) {
-      share_button.title = 'Copy link as HTML'
+      share_button.title = `Copy link as HTML
+(use [Ctrl+V] to paste in Moodle)`
     }
     
     function share(mod) {
@@ -842,7 +847,7 @@ function windowResized() {
     }
     
     document.addEventListener('keydown', global_keys_handler)
-
+    
     document.addEventListener('keydown', e => {
       if ((e.altKey || e.getModifierState?.('AltGraph')) && !e.ctrlKey && !e.metaKey && !e.shiftKey) {
         let font_size_change = true
@@ -860,7 +865,7 @@ function windowResized() {
         }
       }
     })
-
+    
     function global_keys_handler(e) {
       const layout_key = get_layout_key(e)
       if (!e.altKey && !e.getModifierState?.('AltGraph') && (e.ctrlKey || e.metaKey)
@@ -884,25 +889,67 @@ function windowResized() {
       }
     }))
     
-    editor.addEventListener('keydown', e => {
-      if (document.execCommand && (e.key == 'Enter' || e.key == 'Tab') && !e.altKey && !e.getModifierState?.('AltGraph') && !e.ctrlKey && !e.metaKey) {
+    editor.addEventListener('copy', e => {  // With no selection - Duplicate line
+      if (document.execCommand && textarea.selectionStart == textarea.selectionEnd) {
         e.preventDefault()
         const textarea = e.target
-        const text = textarea.value
+        const text = textarea.value + '\n'
         const start = textarea.selectionStart
+        const transposed = text.slice(start, text.indexOf('\n', start) + 1) + text.slice(text.lastIndexOf('\n', start - 1) + 1, start)
+        document.execCommand('insertText', false, transposed)
+        textarea.setSelectionRange(start + transposed.length, start + transposed.length)
+      }
+    })
+    
+    editor.addEventListener('pointerdown', () => prev_key = null)
+    
+    editor.addEventListener('keydown', e => {
+      if (document.execCommand && ['Enter', 'Home', 'End', 'Tab'].includes(e.key) && !e.altKey && !e.getModifierState?.('AltGraph') && !e.ctrlKey && !e.metaKey) {
+        if (e.key != 'End' || prev_key == 'End')
+          e.preventDefault()
+        const textarea = e.target
+        const text = textarea.value
+        let start = textarea.selectionStart
         let end = textarea.selectionEnd
-        if (e.key == 'Enter') {
+        if (e.key == 'Enter') {  // New line with current or coding-language-based extra indentation
           let slice_end
-          if (e.shiftKey)  // Start new line with indentation below cursor (ignore selection)
+          if (e.shiftKey)  // Skip to line end beforehand
             textarea.selectionStart = textarea.selectionEnd = (text + '\n').indexOf('\n', textarea.selectionDirection == 'backward' ? start : end)
           else
             slice_end = start
           const line_start = text.lastIndexOf('\n', start - 1) + 1
           let indent = '\n' + text.slice(line_start, slice_end).match(/^[ \t]*/)
-          if (text.slice(line_start, textarea.selectionStart).match(/([{[(:]|=>)\s*$/))
+          if (text.slice(line_start, textarea.selectionStart).match(/([{[(:]|=>|<(div|g|p)\b[^>]*>)\s*$/))
             indent += indent.endsWith(' ') ? '  ' : '\t'
           document.execCommand('insertText', false, indent)
-        } else if (e.key == 'Tab') {
+        } else if (e.key == 'Home') {  // Move caret to indentation; if already there, move to logical line start (`Shift` for selection)
+          const [caret, anti_caret] = textarea.selectionDirection == 'backward' ? [start, end] : [end, start]
+          const line_start = text.lastIndexOf('\n', caret - 1) + 1
+          const whitespace = text.slice(line_start).match(/^[ \t]*/)[0].length
+          const indent = line_start + (caret == line_start + whitespace ? 0 : whitespace)
+          start = Math.max(start, anti_caret)
+          if (e.shiftKey && start < indent) {
+            textarea.selectionStart = start
+            textarea.selectionDirection = 'forward'
+          } else
+            textarea.selectionStart = indent
+          if (e.shiftKey && anti_caret > indent) {
+            textarea.selectionEnd = anti_caret
+            textarea.selectionDirection = 'backward'
+          } else
+            textarea.selectionEnd = indent
+          if (!wrap.checked)
+            textarea.scrollLeft = 0
+        } else if (e.key == 'End' && prev_key == 'End') {  // For wrapped lines, second press moves caret to logical line end (`Shift` for selection)
+          const caret = (text + '\n').indexOf('\n', start)
+          if (e.shiftKey && textarea.selectionEnd > caret && textarea.selectionDirection == 'backward')
+            textarea.selectionStart = caret
+          else {
+            textarea.selectionEnd = caret
+            if (!e.shiftKey)
+              textarea.selectionStart = caret
+          }
+        } else if (e.key == 'Tab') {  // Indent / unindent at caret or selection start
           textarea.selectionEnd = start
           if (!e.shiftKey)
             document.execCommand('insertText', false, '\t')
@@ -931,7 +978,9 @@ function windowResized() {
           }
           textarea.selectionEnd = textarea.selectionStart + end - start
         }
-      }
+        prev_key = e.key
+      } else if (e.key != 'Shift')
+        prev_key = null
     })
   </script>
 </body>
