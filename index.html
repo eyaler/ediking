@@ -889,9 +889,9 @@ function windowResized() {
     }))
     
     editor.addEventListener('copy', e => {  // With no selection - Duplicate line
+      const textarea = e.target
       if (document.execCommand && textarea.selectionStart == textarea.selectionEnd) {
         e.preventDefault()
-        const textarea = e.target
         const text = textarea.value + '\n'
         const start = textarea.selectionStart
         const transposed = text.slice(start, text.indexOf('\n', start) + 1) + text.slice(text.lastIndexOf('\n', start - 1) + 1, start)

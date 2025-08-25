@@ -40,7 +40,6 @@ For teaching p5.js: [tfi.la/p5](https://tfi.la/p5)  (p5.js template + disable LL
 - [`?noai`](https://tfi.la/e?noai) - Disable LLM (aka student mode)
 
 
-- `?pause` - delay loading code into iframe until next edit
 - `?pause` - Delay loading code into iframe until next edit (to allow fixing bad code)
 
 ### iframe convenience features
