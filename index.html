@@ -103,7 +103,7 @@
     #share_button {
       text-shadow: 0 0 black;
     }
-
+    
     #controls a {
       text-decoration: none;
     }
@@ -248,7 +248,8 @@ and use Ctrl+V to paste in Moodle)">&#x1f517;</button>
   </div>
   
   <script>
-    let active_before_update, prom_active, writer, rewriter, controller, user_click, loop, was_loop
+    'use strict'
+    let prev_key, active_before_update, prom_active, writer, rewriter, controller, user_click, loop, was_loop
     let font_size_factor = 1
     const font_size_factor_step = .05
     const min_font_size_factor = .1
@@ -486,10 +487,8 @@ function windowResized() {
         iframe.srcdoc = ''
       } else
         iframe.srcdoc = code.value
-      editor.after(iframe)
-      set_history_state('#' + encodeURIComponent(code.value))
-      if (decodeURIComponent(location.hash.slice(1)) != code.value && self == top)
-        alert(`Too much data to save in URL - truncated to ${location.href.length} chars.`)
+      if (editor.nextSibling != iframe)
+        editor.after(iframe)
     }
     
     code.addEventListener('focus', () => prom_active = false)
@@ -522,6 +521,9 @@ function windowResized() {
       if (get_url_param() < 3)
         doc.addEventListener('keydown', global_keys_handler, true)
       ;['dragover', 'drop'].forEach(e => doc.addEventListener(e, block_drop_nav, true))
+      set_history_state('#' + encodeURIComponent(code.value))
+      if (decodeURIComponent(location.hash.slice(1)) != code.value && self == top)
+        alert(`Too much data to save in URL - truncated to ${location.href.length} chars.`)
     })
     
     full.addEventListener('input', () => {
@@ -576,7 +578,7 @@ function windowResized() {
     
     llm.addEventListener('click', e => user_click = user_click == null || e.isTrusted)
     
-    llm.addEventListener('change', async () => {
+    llm.addEventListener('input', async () => {
       if (llm.checked) {
         if (writer == null || rewriter == null) {
           prom.readOnly = true
