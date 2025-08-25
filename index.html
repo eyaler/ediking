@@ -30,12 +30,15 @@
     }
     
     #controls {
-      background-color: Canvas;
       display: flex;
       flex-direction: column;
       position: fixed;
       user-select: none;
       -webkit-user-select: none;
+    }
+    
+    #controls:not(:has(#full:checked)) {
+      background-color: Field;
     }
     
     #controls > * {
@@ -65,7 +68,7 @@
     
     #full:checked + label::before {
       content: '\21f2';
-      text-shadow: 1px 0 Canvas;
+      text-shadow: 1px 0 Field;
     }
     
     #controls > :is(
@@ -107,7 +110,6 @@
     
     #editor {
       display: grid;
-      --font_size_factor: 1;
     }
     
     #controls:has(#wrap:not(:checked)) ~ #editor textarea {
@@ -122,7 +124,7 @@
     }
     
     textarea {
-      font-size: calc(1rem * var(--font_size_factor));
+      font-size: calc(1rem * var(--font_size_factor, 1));
       padding: 1rem;
       padding-left: 1.5rem;
       tab-size: 2ch;
@@ -383,8 +385,7 @@ function windowResized() {
         const body = doc.body || html.appendChild(doc.createElement('body'))
         log_elem = body.appendChild(doc.createElement('pre'))
         log_elem.id = 'log_elem'
-        log_elem.style.setProperty('--font_size_factor', font_size_factor)
-        log_elem.style.font = 'calc(1rem * var(--font_size_factor)) monospace'
+        log_elem.style.font = 'calc(1rem * var(--font_size_factor, 1)) monospace'
         log_elem.style.margin = '1rem .5rem'
         log_elem.style.overflowWrap = 'break-word'
         log_elem.style.whiteSpace = 'pre-wrap'
@@ -861,6 +862,7 @@ function windowResized() {
         if (font_size_change) {
           e.preventDefault()
           editor.style.setProperty('--font_size_factor', font_size_factor)
+          iframe.contentDocument.getElementById('log_elem')?.style.setProperty('--font_size_factor', font_size_factor)
         }
       }
     })
