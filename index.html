@@ -101,7 +101,23 @@
     }
     
     #share_button {
+      position: relative;
       text-shadow: 0 0 black;
+    }
+    
+    #share_button::before {
+      bottom: 0;
+      content: '\2714';
+      font-size: .8em;
+      opacity: 0;
+      position: absolute;
+      right: 0;
+      transition: opacity 5s ease-in;
+    }
+    
+    #share_button.copied::before {
+      opacity: 1;
+      transition: none;
     }
     
     #controls a {
@@ -239,7 +255,7 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
     <button onclick="save()" aria-keyshortcuts="Ctrl+S" title="Save file [Ctrl+S]">&#x1f4be;&#xfe0e;</button>
     <button id="share_button" onclick="share(event.ctrlKey || event.metaKey || event.button == 1)" title="Share (or [Ctrl+Click] to copy link as HTML,
 and use Ctrl+V to paste in Moodle)">&#x1f517;</button>
-    <a href="https://github.com/eyaler/ediking" target="_blank" title="GitHub">&#x1f431;</a>
+    <a href="https://github.com/eyaler/ediking" target="_blank" title="Code and documentation on GitHub">&#x1f431;</a>
   </div>
   
   <div id="editor">
@@ -257,6 +273,7 @@ and use Ctrl+V to paste in Moodle)">&#x1f517;</button>
     const persistent_params = ['temp', 'noai']
     const max_safe_iters = 1000
     const default_template = 'html'
+    const uniform_block_comments = true
     
     const templates = {  // Use '  ' (two spaces; will be removed) to denote caret location
       1: ``,
@@ -384,24 +401,28 @@ function windowResized() {
       let log_elem = doc.getElementById('log_elem')
       if (!log_elem) {
         const body = doc.body || html.appendChild(doc.createElement('body'))
-        log_elem = body.appendChild(doc.createElement('pre'))
+        log_elem = doc.createElement('pre')
+        log_elem.style.display = 'none'
+        body.appendChild(log_elem)
         log_elem.id = 'log_elem'
+        log_elem.style.setProperty('--font_size_factor', font_size_factor)
         log_elem.style.font = 'calc(1rem * var(--font_size_factor, 1)) monospace'
         log_elem.style.margin = '1rem .5rem'
         log_elem.style.overflowWrap = 'break-word'
         log_elem.style.whiteSpace = 'pre-wrap'
       }
-      log_elem.textContent += args.map(x => typeof x == 'object' ? JSON.stringify(x) : String(x)).join(' ')
-      if (args.length)
-        log_elem.textContent += '\n'
-      log_elem.scrollIntoView(false)
+      if (args.length) {
+        log_elem.style.display = 'revert'
+        log_elem.textContent += args.map(x => typeof x == 'object' ? JSON.stringify(x, null, 1).replace(/\n\s*/g, ' ') : String(x)).join(' ') + '\n'
+        log_elem.scrollIntoView(false)
+      }
       return log_elem
     }
     
     function safeLog(...args) {
       const log_elem = log(...args)
       const key = 'data-' + JSON.stringify(Error().stack).toLowerCase().replace(/[^a-z0-9-]+/g, '').slice(-100)
-      const cnt = (log_elem.getAttribute(key) | 0) + 1
+      const cnt = +log_elem.getAttribute(key) + 1
       if (cnt > max_safe_iters) {
         const err = `Suspected infinite loop stopped after ${cnt} iterations`
         log('Error:', err)
@@ -624,7 +645,7 @@ function windowResized() {
       return s.replace(/(?<!:)(\/\/[^\n]*)$/, '$1\n')
     }
     
-    async function generate(mod, cont_start, cont_end) {
+    async function generate(mod, cont_start, cont_end, cont_dir) {
       if (!controller || controller.signal.aborted && mod != null && !run_stop.classList.contains('running'))
         controller = new AbortController()
       
@@ -650,6 +671,7 @@ function windowResized() {
         
         let start = code.selectionStart
         let end = code.selectionEnd
+        let dir = code.selectionDirection
         const orig_len = code_text.length
         const trimmed = code_text.trim()
         const partial = start < end && end - start < trimmed.length || cont_start != null && trimmed
@@ -663,6 +685,7 @@ function windowResized() {
             code_text = ''
             start = cont_start
             end = cont_end
+            dir = cont_dir
           } else {
             code_before = code_text.slice(0, start)
             code_after = code_text.slice(end)
@@ -697,13 +720,11 @@ function windowResized() {
           for await (const chunk of stream) {
             resp += chunk
             code.value = close_comment(code_before) + close_comment(resp.replace(/\n?```[^\n]*\n?/g, '')) + code_after
-            if (start < end) {
-              code.selectionStart = start
-              code.selectionEnd = end + code.value.length - orig_len
-            }
+            if (start < end)
+              code.setSelectionRange(start, end + code.textLength - orig_len, dir)
           }
           if (!was_loop && !code.value.includes('</html>') && !code_after.trim() && !controller.signal.aborted)
-            await generate(null, start, start < end ? end + code.value.length - orig_len : end)
+            await generate(null, start, start < end ? end + code.textLength - orig_len : end, dir)
         } catch (error) {
           if (error.name == 'QuotaExceededError') {
             alert(`Error: LLM input (code + prompt) is ${error.requested.toLocaleString()} tokens,\nbut model is limited to ${error.quota.toLocaleString()} tokens.`);
@@ -717,10 +738,8 @@ function windowResized() {
               alert(error)
           }
         }
-        if (start < end) {
-          code.selectionStart = start
-          code.selectionEnd = end + code.value.length - orig_len
-        }
+        if (start < end)
+          code.setSelectionRange(start, end + code.textLength - orig_len, dir)
         if (!controller.signal.aborted || controller.signal.reason != 'nav') {
           if (code.value != save_code)
             set_history_state(url, true)
@@ -832,10 +851,16 @@ function windowResized() {
 (use [Ctrl+V] to paste in Moodle)`
     }
     
+    function toggle_checkmark() {
+      share_button.classList.add('copied')
+      share_button.offsetWidth  // Restart transition. See: https://css-tricks.com/restart-css-animation/
+      share_button.classList.remove('copied')
+    }
+    
     function share(mod) {
       (!mod && navigator.share?.({url: location, text: location, title: document.title}).catch(() => {}))
-       || navigator.clipboard.write?.([new ClipboardItem({'text/html': new Blob([`<a href="${location}">${location}</a>`], {type: 'text/html'}), 'text/plain': new Blob([location], {type: 'text/plain'})})])
-       || navigator.clipboard.writeText(location)
+       || navigator.clipboard.write?.([new ClipboardItem({'text/html': new Blob([`<a href="${location}">${location}</a>`], {type: 'text/html'}), 'text/plain': new Blob([location], {type: 'text/plain'})})]).then(toggle_checkmark)
+       || navigator.clipboard.writeText(location).then(toggle_checkmark)
     }
     
     
@@ -892,47 +917,85 @@ function windowResized() {
       }
     }))
     
+    function safe_last_index_of_newline(text, pos) {
+      return (pos > 0) * (text.lastIndexOf('\n', pos - 1) + 1)
+    }
+    
+    function safe_insert(text, len) {  // Protect from Chromium issues: https://issues.chromium.org/issues/442551790 , https://issues.chromium.org/issues/442600643
+      if (text)
+        document.execCommand('insertText', false, text)
+      else if (len)
+        document.execCommand('delete')
+    }
+    
     editor.addEventListener('copy', e => {  // With no selection - Duplicate line
       const textarea = e.target
       if (document.execCommand && textarea.selectionStart == textarea.selectionEnd) {
         e.preventDefault()
         const text = textarea.value + '\n'
         const start = textarea.selectionStart
-        const transposed = text.slice(start, text.indexOf('\n', start) + 1) + text.slice(text.lastIndexOf('\n', start - 1) + 1, start)
-        document.execCommand('insertText', false, transposed)
+        const transposed = text.slice(start, text.indexOf('\n', start) + 1) + text.slice(safe_last_index_of_newline(text, start), start)
+        safe_insert(transposed)
         textarea.setSelectionRange(start + transposed.length, start + transposed.length)
+      }
+    })
+    
+    editor.addEventListener('cut', e => {  // With no selection - Delete line
+      const textarea = e.target
+      if (document.execCommand && textarea.selectionStart == textarea.selectionEnd) {
+        e.preventDefault()
+        const text = textarea.value + '\n'
+        const start = textarea.selectionStart
+        const line_start = safe_last_index_of_newline(text, start)
+        const line_end = text.indexOf('\n', start) + 1
+        const next_line_end = text.indexOf('\n', line_end)
+        textarea.setSelectionRange(Math.max(0, line_start + Math.min(0, next_line_end)), line_end)
+        document.execCommand('delete')
+        let caret
+        if (next_line_end == -1)
+          caret = Math.min(line_start - 1, safe_last_index_of_newline(text, line_start - 1) + start - line_start)
+        else
+          caret = Math.min(start, line_start + next_line_end - line_end)
+        textarea.setSelectionRange(caret, caret)
       }
     })
     
     editor.addEventListener('pointerdown', () => prev_key = null)
     
     editor.addEventListener('keydown', e => {
-      if (document.execCommand && ['Enter', 'Home', 'End', 'Tab'].includes(e.key) && !e.altKey && !e.getModifierState?.('AltGraph') && !e.ctrlKey && !e.metaKey) {
+      if (document.execCommand && !e.altKey && !e.getModifierState?.('AltGraph')
+          && (['Enter', 'Home', 'End', 'Tab'].includes(e.key) && !e.ctrlKey && !e.metaKey
+              || e.key == '/' && (e.ctrlKey || e.metaKey) && !e.shiftKey)) {
         if (e.key != 'End' || prev_key == 'End')
           e.preventDefault()
         const textarea = e.target
         const text = textarea.value
-        let start = textarea.selectionStart
-        let end = textarea.selectionEnd
+        const start = textarea.selectionStart
+        const end = textarea.selectionEnd
+        const dir = textarea.selectionDirection
+        
         if (e.key == 'Enter') {  // New line with current or coding-language-based extra indentation
+          let caret = start
           let slice_end
           if (e.shiftKey)  // Skip to line end beforehand
-            textarea.selectionStart = textarea.selectionEnd = (text + '\n').indexOf('\n', textarea.selectionDirection == 'backward' ? start : end)
+            caret = textarea.selectionStart = textarea.selectionEnd = (text + '\n').indexOf('\n', dir == 'backward' ? start : end)
           else
             slice_end = start
-          const line_start = text.lastIndexOf('\n', start - 1) + 1
+          const line_start = safe_last_index_of_newline(text, caret)
           let indent = '\n' + text.slice(line_start, slice_end).match(/^[ \t]*/)
-          if (text.slice(line_start, textarea.selectionStart).match(/([{[(:]|=>|<(div|g|p)\b[^>]*>)\s*$/))
+          if (text.slice(line_start, caret).match(/([{[(:]|=>|<(div|g|p)\b[^>]*>)\s*$/))
             indent += indent.endsWith(' ') ? '  ' : '\t'
-          document.execCommand('insertText', false, indent)
-        } else if (e.key == 'Home') {  // Move caret to indentation; if already there, move to logical line start (`Shift` for selection)
-          const [caret, anti_caret] = textarea.selectionDirection == 'backward' ? [start, end] : [end, start]
-          const line_start = text.lastIndexOf('\n', caret - 1) + 1
+          safe_insert(indent)
+        }
+        
+        else if (e.key == 'Home') {  // Move caret to indentation; if already there, move to logical line start (`Shift` for selection)
+          let [caret, anti_caret] = dir == 'backward' ? [start, end] : [end, start]
+          const line_start = safe_last_index_of_newline(text, caret)
           const whitespace = text.slice(line_start).match(/^[ \t]*/)[0].length
           const indent = line_start + (caret == line_start + whitespace ? 0 : whitespace)
-          start = Math.max(start, anti_caret)
-          if (e.shiftKey && start < indent) {
-            textarea.selectionStart = start
+          caret = Math.max(start, anti_caret)
+          if (e.shiftKey && caret < indent) {
+            textarea.selectionStart = caret
             textarea.selectionDirection = 'forward'
           } else
             textarea.selectionStart = indent
@@ -943,43 +1006,90 @@ function windowResized() {
             textarea.selectionEnd = indent
           if (!wrap.checked)
             textarea.scrollLeft = 0
-        } else if (e.key == 'End' && prev_key == 'End') {  // For wrapped lines, second press moves caret to logical line end (`Shift` for selection)
+        }
+        
+        else if (e.key == 'End' && prev_key == 'End') {  // For wrapped lines, second press moves caret to logical line end (`Shift` for selection)
           const caret = (text + '\n').indexOf('\n', start)
-          if (e.shiftKey && textarea.selectionEnd > caret && textarea.selectionDirection == 'backward')
+          if (e.shiftKey && textarea.selectionEnd > caret && dir == 'backward')
             textarea.selectionStart = caret
           else {
             textarea.selectionEnd = caret
             if (!e.shiftKey)
               textarea.selectionStart = caret
           }
-        } else if (e.key == 'Tab') {  // Indent / unindent at caret or selection start
-          textarea.selectionEnd = start
-          if (!e.shiftKey)
-            document.execCommand('insertText', false, '\t')
+        }
+        
+        else if (e.key == 'Tab') {  // Indent / unindent at caret or multi-line for selection
+          if (end > start) {
+            const block_start = safe_last_index_of_newline(text, start)
+            let indented = text.slice(block_start, end)
+            let new_start
+            if (e.shiftKey) {
+              indented = indented.replace(/(?<=^|\n(?!$))(\t| {1,2})/g, '')
+              new_start = Math.max(start - 1, block_start)
+            } else {
+              indented = '\t' + indented.replace(/\n(?!$)/g, '\n\t')
+              new_start = start + 1
+            }
+            textarea.selectionStart = block_start
+            safe_insert(indented, end - start)
+            textarea.setSelectionRange(new_start, block_start + indented.length, dir)
+          } else if (!e.shiftKey)
+            safe_insert('\t')
           else if (text[start - 1] == '\t')
             document.execCommand('delete')
-          else if (text[start] == '\t') {
+          else if (text[start] == '\t')
             document.execCommand('forwardDelete')
-            end -= end > start
-          } else if (start > 1 && text.slice(start - 2, start) == '  ') {
+          else if (start > 1 && text.slice(start - 2, start) == '  ') {
             document.execCommand('delete')
             document.execCommand('delete')
           } else if (start && text.slice(start - 1, start + 1) == '  ') {
             document.execCommand('delete')
             document.execCommand('forwardDelete')
-            end -= end > start
           } else if (text[start - 1] == ' ')
             document.execCommand('delete')
           else if (text.slice(start, start + 2) == '  ') {
             document.execCommand('forwardDelete')
             document.execCommand('forwardDelete')
-            end -= end > start
-            end -= end > start
-          } else if (text[start] == ' ') {
+          } else if (text[start] == ' ')
             document.execCommand('forwardDelete')
-            end -= end > start
+        }
+        
+        else if (e.key == '/') {  // Multi-line `//` comment / uncomment
+          const block_start = safe_last_index_of_newline(text, start)
+          let block_end = end
+          if (start == end || text[end - 1] != '\n')
+            block_end = (text + '\n').indexOf('\n', end)
+          const block = text.slice(block_start, block_end)
+          if (start == end && end == block_end && !block.trim())
+            safe_insert('// ')
+          else {
+            const offsets = []
+            let missing
+            let min_indent
+            let commented = block.replace(/(?<=^|\n(?!$))(?=[\t ]*\S|(?<=^)[^\n]*[\n]?$)([\t ]*)(\/\/ ?)?/g, (m, p1, p2, offset) => {
+              offsets.push([block_start + offset + p1.length, (p2 || '').length])
+              missing ||= !p2
+              min_indent ??= p1
+              for (const i in min_indent)
+                if (min_indent[i] != p1[i]) {
+                  min_indent = min_indent.slice(0, i)
+                  break
+                }
+              return p2 ? p1 : p1 + '// '
+            })
+            if (offsets.length) {
+              textarea.selectionStart = block_start
+              textarea.selectionEnd = block_end
+              if (uniform_block_comments && offsets.length > 1 && missing)
+                commented = block.replace(RegExp(`(?<=(^|\n)${min_indent})(?=[\t ]*\\S)`, 'g'), '// ')
+              safe_insert(commented, block_end - block_start)
+              const new_start = start + (start >= offsets[0][0])*(offsets[0][1] ? -Math.min(offsets[0][1], start - offsets[0][0]) : 3)
+              const last = offsets[offsets.length - 1]
+              const new_end = block_start + commented.length + end - block_end - (end <= last[0] + last[1])*(last[1] ? -Math.min(last[1], last[0] + last[1] - end) : 3)
+              textarea.setSelectionRange(new_start, new_end, dir)
+            }
           }
-          textarea.selectionEnd = textarea.selectionStart + end - start
         }
         prev_key = e.key
       } else if (e.key != 'Shift')

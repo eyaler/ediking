@@ -11,12 +11,15 @@ For teaching p5.js: [tfi.la/p5](https://tfi.la/p5)  (p5.js template + disable LL
 - `Ctrl`+`Shift`+`Enter` (or `Ctrl`+`Click` on the button) - Looping / no-loop generation (when LLM is available)
 - `Ctrl`+`S` - Save HTML file (currently rendered version)
 - `Alt`+`0`/`-`/`+` - Reset / decrease / increase editor font size
+
 #### Editor text areas
-- `Tab`, `Shift`+`Tab` - Indent / unindent at caret or selection start
+- `Tab`, `Shift`+`Tab` - Indent / unindent at caret or multi-line for selection
 - `Enter`, `Shift`+`Enter` - New line with current or coding-language-based extra indentation (`Shift` skips to line end beforehand)
 - `Home`, `Shift`+`Home` - Move caret to indentation; if already there, move to logical line start (`Shift` for selection) 
 - `End`, `Shift`+`End` - For wrapped lines, second press moves caret to logical line end (`Shift` for selection)
 - `Ctrl`+`C` with no selection - Duplicate line
+- `Ctrl`+`X` with no selection - Delete line
+- `Ctrl`+`/` - Multi-line `//` comment / uncomment
 - Drag and drop file(s) - Open and add HTML tags for CSS and JS, `.prompt` files loaded to prompt (as raw text)
 
 ### URL API (synced with GUI)
@@ -74,7 +77,7 @@ For teaching p5.js: [tfi.la/p5](https://tfi.la/p5)  (p5.js template + disable LL
 - Future opportunities:
   - Tab completions
   - Inline protected code regions (e.g. for tests)
-  - Automatic error capturing and prompting
+  - Automatic error capturing and prompting for explanations and automatic fixes
   - Prompt API
   - Multimodal input of the rendered iframe screenshot
   - Parse `.prompt` files for system prompt and params
@@ -87,8 +90,8 @@ For teaching p5.js: [tfi.la/p5](https://tfi.la/p5)  (p5.js template + disable LL
 - Drag and drop HTML content and links to grab code
 - Direct editing of the iframe (aka designMode) reflected in the code editor
 - Use gunDB or Nostr for persistence, sharing and collaborative editing
-- Multiline indentation, syntax highlighting and other code editor niceties
+- Syntax highlighting and other code editor niceties
 
 ### Fun
-- Recursion: https://tfi.la/e#recur (LLM is disabled to prevent browser crash)
+- Recursion (code = ediKing): https://tfi.la/e#recur (LLM is disabled to prevent browser crash)
 - Alien translation airlock: https://tfi.la/e?loop&prompt=Communicate+with+the+aliens+using+text%2C+shapes+and+colors.+Change+the+prevoius+message+and+make+it+even+more+psychedelic%21#%3C!DOCTYPE%20html%3E%0A%3Chtml%20lang%3D%22en%22%3E%0A%3Cbody%3E%0A%3Ch1%3EMessage%20to%20the%20aliens...%3C%2Fh1%3E%0A%3C%2Fbody%3E%0A%3C%2Fhtml%3E (when LLM is available)
