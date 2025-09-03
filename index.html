@@ -705,7 +705,7 @@ function windowResized() {
             if (partial) {
               let before_context = code_before.trim()
               let after_context = code_after.trim()
-              let code_context = '\n<!--COMPLETE MISSING CODE HERE AND OUTPUT ONLY THIS PART-->\n'
+              let code_context = '\n<!--/* COMPLETE MISSING CODE HERE AND OUTPUT ONLY THIS PART */-->\n'
               prompt_text += '\n\nCURRENT CODE:\n\n'
               while ((before_context || after_context) && (shared_context + prompt_text + code_context).length < writer.inputQuota * chars_to_tokens) {
                 code_context = before_context.slice(-1) + code_context + after_context[0]
