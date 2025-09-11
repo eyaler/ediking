@@ -33,8 +33,8 @@
       display: flex;
       flex-direction: column;
       position: fixed;
-      user-select: none;
       -webkit-user-select: none;
+      user-select: none;
     }
     
     #controls:not(:has(#full:checked)) {
@@ -122,6 +122,28 @@
     
     #controls a {
       text-decoration: none;
+    }
+    
+    dialog {
+      line-height: 2;
+      margin-left: 2rem;
+      padding: 0;
+      text-align: right;
+    }
+    
+    dialog > div {
+      padding: 1rem;
+    }
+    
+    dialog > div > p:first-child {
+      font-variant-caps: all-small-caps;
+      font-size: .8em;
+      margin-top: 0;
+      text-align: center;
+    }
+    
+    dialog label {
+      display: block;
     }
     
     #editor {
@@ -265,7 +287,7 @@ and use Ctrl+V to paste in Moodle)">&#x1f517;</button>
   
   <script>
     'use strict'
-    let prev_key, active_before_update, prom_active, writer, rewriter, controller, user_click, loop, was_loop
+    let prev_key, active_before_update, prom_active, writer, rewriter, controller, user_click, loop, was_loop, gun, pad
     let font_size_factor = 1
     const font_size_factor_step = .05
     const min_font_size_factor = .1
@@ -274,6 +296,7 @@ and use Ctrl+V to paste in Moodle)">&#x1f517;</button>
     const max_safe_iters = 1000
     const default_template = 'html'
     const uniform_block_comments = true
+    const gun_peers = ['https://gun-manhattan.herokuapp.com/gun', 'https://try.axe.eco/gun', 'https://test.era.eco/gun', 'https://peer.wallie.io/gun']
     
     const templates = {  // Use '  ' (two spaces; will be removed) to denote caret location
       1: ``,
@@ -787,7 +810,7 @@ function windowResized() {
         const reader = new FileReader()
         reader.onload = () => {
           let content = reader.result
-          if (file.name.endsWith('.prompt')) {
+          if (file.name.endsWith('.prompt') || file.name.endsWith('.poml')) {
             if (!prom.readOnly) {
               if (have_prompt)
                 prom.value += '\n\n'

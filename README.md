@@ -20,7 +20,7 @@ For teaching p5.js: [tfi.la/p5](https://tfi.la/p5)  (p5.js template + disable LL
 - `Ctrl`+`C` with no selection - Duplicate line
 - `Ctrl`+`X` with no selection - Delete line
 - `Ctrl`+`/` - Multi-line `//` comment / uncomment
-- Drag and drop file(s) - Open and add HTML tags for CSS and JS, `.prompt` files loaded to prompt (as raw text)
+- Drag and drop file(s) - Open and add HTML tags for CSS and JS, `.prompt` / `.poml` files loaded to prompt (as raw text)
 
 ### URL API (synced with GUI)
 - `#...` - Code
@@ -51,7 +51,7 @@ For teaching p5.js: [tfi.la/p5](https://tfi.la/p5)  (p5.js template + disable LL
 - Add `target="_blank"` to `a` links of different origin, to allow opening from iframe
 - Grab title, description and favicon from iframe
 - Prevent top level navigation when file dropped on iframe
-- Helper functions for output in iframe: `parent.clear()`, `parent.log()`, `parent.safeLog()` / `parent.safelog()` (infinite loop protection)
+- Helper functions for output in iframe: `top.clear()`, `top.log()`, `top.safeLog()` / `top.safelog()` (infinite loop protection)
 
 ### Experimental Writer / Rewriter Chrome API integration
 - Models and requirements:
@@ -80,7 +80,7 @@ For teaching p5.js: [tfi.la/p5](https://tfi.la/p5)  (p5.js template + disable LL
   - Automatic error capturing and prompting for explanations and automatic fixes
   - Prompt API
   - Multimodal input of the rendered iframe screenshot
-  - Parse `.prompt` files for system prompt and params
+  - Parse `.prompt` / `.poml` files for system prompt and params
   - Allow LLM to generate its next prompt (can currently be emulated via generated code comments)
 
 ### Other things I may add
