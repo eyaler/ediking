@@ -73,6 +73,7 @@ For teaching p5.js: [tfi.la/p5](https://tfi.la/p5)  (p5.js template + disable LL
   - Not enough disk space - https://issues.chromium.org/issues/427535092
   - Page reload may crash Chrome - https://issues.chromium.org/issues/428688095
   - Wrong model availability on Chrome launch - https://issues.chromium.org/issues/429183223
+  - Invalid state error when loading model - https://issues.chromium.org/issues/441547039
   - After aborting the next generation is delayed
 - Future opportunities:
   - Tab completions

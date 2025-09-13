@@ -654,6 +654,7 @@ function windowResized() {
               writer = null
             if (!rewriter && phase == 'rewriter')
               rewriter = null
+            console.log(error)
             alert(error)
             llm.checked = false
           }
@@ -737,9 +738,9 @@ function windowResized() {
               }
               prompt_text += code_context.replaceAll('FIXME', '')
             }
-            stream = await writer.writeStreaming(prompt_text, abort_signal)
+            stream = writer.writeStreaming(prompt_text, abort_signal)
           } else
-            stream = await rewriter.rewriteStreaming(code_text, {context: prompt_text, ...abort_signal})
+            stream = rewriter.rewriteStreaming(code_text, {context: prompt_text, ...abort_signal})
           for await (const chunk of stream) {
             resp += chunk
             code.value = close_comment(code_before) + close_comment(resp.replace(/\n?```[^\n]*\n?/g, '')) + code_after
