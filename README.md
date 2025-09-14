@@ -43,6 +43,12 @@ For teaching p5.js: [tfi.la/p5](https://tfi.la/p5)  (p5.js template + disable LL
 - [`?noai`](https://tfi.la/e?noai) - Disable LLM (aka student mode)
 
 
+- `?session=...` - Session number for broadcasting
+- `?user=...` - Username for broadcasting
+- `?group=...` - Group name for broadcasting
+- `?key=...` - Key code for broadcasting (for obfuscation, not real encryption)
+
+
 - `?pause` - Delay loading code into iframe until next edit (to allow fixing bad code)
 
 ### iframe convenience features

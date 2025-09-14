@@ -277,8 +277,32 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
     <button onclick="save()" aria-keyshortcuts="Ctrl+S" title="Save file [Ctrl+S]">&#x1f4be;&#xfe0e;</button>
     <button id="share_button" onclick="share(event.ctrlKey || event.metaKey || event.button == 1)" title="Share (or [Ctrl+Click] to copy link as HTML,
 and use Ctrl+V to paste in Moodle)">&#x1f517;</button>
+    <input id="broadcast" autocomplete="off">
+    <label for="broadcast" tabindex="0" title="Broadcast (public)" onclick="if (broadcast.type != 'checkbox') {broadcast.checked = false; broadcast.type = 'checkbox'}">&#x1f52b;&#xfe0e;</label>
     <a href="https://github.com/eyaler/ediking" target="_blank" title="Code and documentation on GitHub">&#x1f431;</a>
   </div>
+  
+  <dialog id="broadcast_dialog" closedby="any" tabindex="-1">  <!-- Fix for Firefox issue: https://bugzilla.mozilla.org/show_bug.cgi?id=1934522 -->
+    <div>
+      <p>Broadcasting live! All data is public!</p>
+      <label>
+        Session:
+        <input id="broadcast_session" type="number" inputmode="numeric" autocomplete="off" min="1" placeholder="Number (optional)" required>
+      </label>
+      <label>
+        User:
+        <input id="broadcast_user" type="text" autocomplete="off">
+      </label>
+      <label>
+        Group:
+        <input id="broadcast_group" type="text" autocomplete="off">
+      </label>
+      <label>
+        Key:
+        <input id="broadcast_key" type="text" autocomplete="off">
+      </label>
+    </div>
+  </dialog>
   
   <div id="editor">
     <textarea id="code" autocomplete="off" autocorrect="off" autofocus placeholder="Code here." oninput="update()"></textarea>
@@ -523,6 +547,12 @@ function windowResized() {
           code.value = temp.replace('  ', '')
           code.setSelectionRange(caret, caret)
         }
+        const session = get_url_param('session')
+        if (session > 0)
+          broadcast_session_value = session
+        broadcast_user.value = get_url_param('user') || localStorage.getItem('ediking_user')
+        broadcast_group.value = get_url_param('group') || localStorage.getItem('ediking_group')
+        broadcast_key.value = get_url_param('key') || localStorage.getItem('ediking_key')
       }
       active_before_update = document.activeElement
       console.clear()
@@ -568,6 +598,7 @@ function windowResized() {
       set_history_state('#' + encodeURIComponent(code.value))
       if (decodeURIComponent(location.hash.slice(1)) != code.value && self == top)
         alert(`Too much data to save in URL - truncated to ${location.href.length} chars.`)
+      put()
     })
     
     full.addEventListener('input', () => {
@@ -781,7 +812,7 @@ function windowResized() {
     }
     
     
-    // New, open, save, share
+    // New, open, save, share, broadcast
     
     function new_editor(e) {
       const search = new URLSearchParams(location.search)
@@ -886,6 +917,84 @@ function windowResized() {
        || navigator.clipboard.write?.([new ClipboardItem({'text/html': new Blob([`<a href="${location}">${location}</a>`], {type: 'text/html'}), 'text/plain': new Blob([location], {type: 'text/plain'})})]).then(toggle_checkmark)
        || navigator.clipboard.writeText(location).then(toggle_checkmark)
     }
+    
+    broadcast_dialog.close()
+    
+    async function load_script(script) {
+      return new Promise((resolve, reject) => {
+        const s = document.head.appendChild(document.createElement('script'))
+        s.onload = () => resolve(s)
+        s.onerror = error => reject(error)
+        s.src = script
+      })
+    }
+    
+    async function put() {
+      if (pad)
+        if (broadcast.checked) {
+          const content = broadcast_key.value ? btoa(String.fromCharCode(...new TextEncoder().encode(location).map((b, i) => b ^ broadcast_key.value.toLowerCase().charCodeAt(i % broadcast_key.value.length)))) : location.href
+          pad.put({content: content, modified: new Date().getTime(), session: broadcast_session.value, user: broadcast_user.value, group: broadcast_group.value})
+        } else
+          pad.put(null)
+    }
+    
+    addEventListener('beforeunload', () => {
+      if (pad)
+        pad.put(null)
+    })
+    
+    broadcast.addEventListener('input', async () => {
+      if (broadcast.checked) {
+        broadcast_dialog.showModal()
+        if (!gun) {
+          gun = true
+          await load_script('https://cdn.jsdelivr.net/npm/gun@0.2020.1241/gun.min.js')
+          await load_script('https://cdn.jsdelivr.net/npm/gun@0.2020.1241/lib/webrtc.min.js')
+          gun = Gun({peers: gun_peers, localStorage: false, rtc: {room: 'ediking'}})
+          pad = gun.get('ediking').get(new Date().getTime() + '_' + crypto.randomUUID())
+          addEventListener('online', () => {
+            gun.opt(gun_peers)
+            put()
+          })
+        }
+      }
+      put()
+    })
+    
+    broadcast_dialog.querySelectorAll('input').forEach(e => e.addEventListener('input', () => {
+      const field = e.id.split('_')[1]
+      if (field != 'session')
+        localStorage['ediking_' + field] = e.value
+      if (pad) {
+        const data = {modified: new Date().getTime()}
+        if (field == 'key')
+          put()
+        else {
+          data[field] = e.value
+          pad.put(data)
+        }
+      }
+    }))
+    
+    broadcast_dialog.addEventListener('click', e => {
+      if (e.target == e.currentTarget)
+        broadcast_dialog.close()
+    })
+    
+    broadcast_dialog.addEventListener('keydown', e => {
+      if (e.key == 'Enter') {
+        const inputs = [...broadcast_dialog.querySelectorAll('input')]
+        for (let i in inputs)
+          if (inputs[i] == document.activeElement) {
+            if (i == inputs.length - 1)
+              broadcast_dialog.close()
+            else
+              inputs[+i + 1].focus()
+            break
+          }
+      } else if (e.key == 'Escape')
+        broadcast_dialog.close()
+    })
     
     
     // Keyboard input

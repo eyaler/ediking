@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://cdn.jsdelivr.net/npm/gun@0.2020.1241/gun.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gun@0.2020.1241/lib/webrtc.min.js"></script>
+  <style>
+    html {
+      overscroll-behavior: none;
+    }
+    
+    body {
+      background-color: steelblue;
+      display: grid;
+      gap: 2px;
+      --min_width: 400px;
+      grid-template-columns: repeat(auto-fit, minmax(var(--min_width), 1fr));
+      height: 100vh;
+      height: 100dvh;
+      margin: 0;
+      overscroll-behavior: none;
+    }
+    
+    div {
+      background: Canvas;
+      min-height: calc(var(--min_width) * 9 / 16);
+      overflow: clip;
+      position: relative;
+    }
+    
+    h1 {
+      background: aliceblue;
+      cursor: default;
+      font-family: monospace;
+      font-size: 1em;
+      inset-block-end: .2rem;
+      inset-inline-end: .2rem;
+      margin: 0;
+      padding-inline: .1rem;
+      position: absolute;
+      transform-origin: 100% 100%;
+      transition: all 1s;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    
+    h1:hover {
+      scale: 1.5;
+    }
+    
+    iframe {
+      border: none;
+      --factor: 2;
+      height: calc(100% * var(--factor));
+      scale: calc(1 / var(--factor));
+      transform-origin: 0 0;
+      width: calc(100% * var(--factor));
+    }
+
+    .fullscreen iframe {
+      height: 100%;
+      scale: 1;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <script>
+    'use strict'
+    const gun_peers = ['https://gun-manhattan.herokuapp.com/gun', 'https://try.axe.eco/gun', 'https://test.era.eco/gun', 'https://peer.wallie.io/gun']
+    const id = location.hash.slice(1) || 'ediking'
+    const params = new URLSearchParams(location.search)
+    const secret = params.get('secret') || ''
+    const group = (params.get('group') || '').toLowerCase()
+    const session = params.get('session') || ''
+    const gun = Gun({peers: gun_peers, localStorage: false, rtc: {room: id}})
+    const pad = gun.get(id)
+    
+    let keycode
+    crypto.subtle.digest('SHA-1', new TextEncoder().encode(secret)).then(r => {
+      keycode = btoa(String.fromCharCode(...new Uint8Array(r))).replace(/[+=\/]/g, '').slice(0, secret.length).toLowerCase()
+      pad.map().on(update)
+      console.log('Broadcast key:', keycode)
+    })
+    
+    document.title = [id, group, session].join('/')
+    addEventListener('hashchange', () => location.reload())
+    addEventListener('online', () => {
+      gun.opt(gun_peers)
+      pad.get('heartbeat').put('heartbeat')
+    })
+    
+    const divs = {}
+    const bad = new Set()
+    
+    function update(data, key) {
+      if (!bad.has(key) && data?.content && (data.group || '').toLowerCase() == group && (!session || data.session == session)) {
+        if (!divs[key]) {
+          const div = document.createElement('div')
+          if (!isNaN(new Date(+key.split('_')[0]).getTime()))
+            for (let k in divs)
+              if (k.localeCompare(key) == 1) {
+                divs[key] = document.body.insertBefore(div, divs[k])
+                break
+              }
+          if (!divs[key])
+            divs[key] = document.body.appendChild(div)
+          divs[key].appendChild(document.createElement('iframe'))
+          const iframe = divs[key].children[0]
+          iframe.sandbox = 'allow-downloads allow-forms allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-scripts'
+          iframe.allow = 'accelerometer; ambient-light-sensor; attribution-reporting; autoplay; bluetooth; browsing-topics; camera; captured-surface-control; compute-pressure; cross-origin-isolated; deferred-fetch; deferred-fetch-minimal; display-capture; encrypted-media; fullscreen; geolocation; gyroscope; hid; identity-credentials-get; idle-detection; language-detector; language-model; local-fonts; magnetometer; microphone; midi; otp-credentials; payment; picture-in-picture; proofreader; publickey-credentials-create; publickey-credentials-get; rewriter; screen-wake-lock; serial; storage-access; summarizer; translator; usb; web-share; window-management; writer; xr-spatial-tracking'
+          iframe.allowFullscreen = true
+          iframe.credentialless = true
+          const h1 = divs[key].appendChild(document.createElement('h1'))
+          h1.onclick = e => toggle_fullscreen(e, null, null, divs[key])
+          h1.title = 'Fullscreen'
+        }
+        
+        const iframe = divs[key].children[0]
+        if (keycode && data.content.startsWith('http')) {
+          iframe.removeAttribute('src')
+          iframe.srcdoc = `<h1>Missing remote key - should be: ${keycode}</h1>`
+        } else {
+          const url = keycode ? new TextDecoder().decode(new Uint8Array([...atob(data.content)].map((c, i) => c.charCodeAt(0) ^ keycode.charCodeAt(i % keycode.length)))) : data.content
+          if (url.startsWith(location.href.split('/').slice(0, -1).join('/'))) {
+            iframe.removeAttribute('srcdoc')
+            iframe.src = url
+          } else if (url.startsWith('http')) {
+            bad.add(key)
+            divs[key].remove()
+            delete divs[key]
+          } else {
+            iframe.removeAttribute('src')
+            iframe.srcdoc = `<h1>Wrong remote key - should be: ${keycode ? keycode : 'empty (no key)'}</h1>`
+          }
+        }
+        if (divs[key])
+          divs[key].children[1].textContent = data.user + ' ' + new Date(data.modified).toLocaleTimeString()
+      } else if (divs[key]) {
+        divs[key].remove()
+        delete divs[key]
+      }
+    }
+    
+    
+    // FULLSCREEN
+    
+    let wake_lock
+    
+    function request_wake_lock() {
+      navigator.wakeLock?.request('screen').then(lock => wake_lock = lock).catch(e => console.warn(e.message))
+    }
+    
+    function visibility_change_handler() {
+      if (wake_lock && document.visibilityState == 'visible')
+        request_wake_lock()
+    }
+    
+    function toggle_fullscreen(event_or_elem, landscape=true, target_screen, elem) {
+      event_or_elem?.preventDefault?.()
+      elem ??= event_or_elem?.currentTarget || event_or_elem
+      const was_not_fullscreen_before = !document.fullscreenElement
+      if (was_not_fullscreen_before) {
+        if (!elem.dataset.has_fullscreen_handler) {
+          elem.dataset.has_fullscreen_handler = true
+          elem.addEventListener('fullscreenchange', () => {
+            if (elem.classList.toggle('fullscreen')) {
+              if (landscape)
+                screen.orientation.lock('landscape').catch(e => console.warn(e.message))  // Works only in Chrome Android. See: https://bugzilla.mozilla.org/show_bug.cgi?id=1744125
+                request_wake_lock()
+                document.addEventListener('visibilitychange', visibility_change_handler)
+              } else
+                wake_lock?.release().then(() => wake_lock = null)
+          })
+        }
+        elem.requestFullscreen({navigationUI: 'hide', screen: target_screen || undefined}).catch(e => console.warn(e.message))
+      } else
+        document.exitFullscreen()
+      return was_not_fullscreen_before
+    }
+  </script>
+</body>
+</html>
