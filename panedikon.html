@@ -40,7 +40,7 @@
       padding-inline: .1rem;
       position: absolute;
       transform-origin: 100% 100%;
-      transition: all 1s;
+      transition: all 1s, color 0s 0s;
       user-select: none;
       -webkit-user-select: none;
     }
@@ -62,6 +62,11 @@
       height: 100%;
       scale: 1;
       width: 100%;
+    }
+    
+    .stale {
+      color: red;
+      transition: color 0s 600s;
     }
   </style>
 </head>
@@ -137,8 +142,13 @@
             iframe.srcdoc = `<h1>Wrong remote key - should be: ${keycode ? keycode : 'empty (no key)'}</h1>`
           }
         }
-        if (divs[key])
-          divs[key].children[1].textContent = data.user + ' ' + new Date(data.modified).toLocaleTimeString()
+        if (divs[key]) {
+          const title = divs[key].children[1]
+          title.classList.remove('stale')
+          title.textContent = data.user + '\u200e ' + new Date(data.modified).toLocaleTimeString()
+          title.offsetWidth  // Restart transition. See: https://css-tricks.com/restart-css-animation/
+          title.classList.add('stale')
+        }
       } else if (divs[key]) {
         divs[key].remove()
         delete divs[key]

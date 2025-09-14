@@ -1115,7 +1115,7 @@ function windowResized() {
           const line_start = safe_last_index_of_newline(text, caret)
           let indent = '\n' + text.slice(line_start, slice_end).match(/^[ \t]*/)
           if (text.slice(line_start, caret).match(/([{[(:]|=>|<(div|g|p)\b[^>]*>)\s*$/))
-            indent += indent.endsWith(' ') ? '  ' : '\t'
+            indent += indent.endsWith('  ') ? '  ' : '\t'
           safe_insert(indent)
         }
         
