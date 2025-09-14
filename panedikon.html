@@ -86,7 +86,7 @@
         alert(`Ask your students to put in the key: ${keycode} (case-insensitive)`)
     })
     
-    document.title = [id, group, session].join('/')
+    document.title = ['👁️', id, group, session].join('/')
     addEventListener('hashchange', () => location.reload())
     addEventListener('online', () => {
       gun.opt(gun_peers)

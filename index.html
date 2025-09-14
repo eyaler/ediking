@@ -584,7 +584,7 @@ function windowResized() {
       const doc = iframe.contentDocument
       document.title = doc.title || 'ediKing'
       const meta = document.querySelector('meta[name=description]') || document.head.appendChild(document.createElement('meta'))
-      meta.content = doc.querySelector('meta[name=description]')?.content ?? 'ediKing - A client-side HTML editor'
+      meta.content = doc.querySelector('meta[name=description]')?.content ?? 'ediKing - A client-side HTML/JS editor'
       meta.name = 'description'
       document.head.querySelectorAll('link[rel=icon]').forEach(e => e.remove())
       doc.head.querySelectorAll('link[rel=icon]').forEach(e => document.head.appendChild(e))

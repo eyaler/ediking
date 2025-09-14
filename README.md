@@ -1,10 +1,10 @@
 # ediKing
-### A client-side HTML editor
+### A client-side HTML/JS editor
 Short link: [tfi.la/e](https://tfi.la/e)
 
 For teaching p5.js: [tfi.la/p5](https://tfi.la/p5)  (p5.js template + disable LLM)
 
-Live gallery for monitoring students remotely: https://io.eyalgruss.com/ediking/panedikon (see [below](#pan))
+The panEdiKon gallery for monitoring students remotely: https://io.eyalgruss.com/ediking/panedikon (see [below](#pan))
 
 ### Keys and gestures
 #### Global
@@ -53,8 +53,8 @@ Live gallery for monitoring students remotely: https://io.eyalgruss.com/ediking/
 
 - `?pause` - Delay loading code into iframe until next edit (to allow fixing bad code)
 
-### <a id="pan"></a>Broadcasting to the panEdiKon 👁️
-- Uses gunDB for live broadcasting
+### <a id="pan"></a>Broadcasting to The panEdiKon 👁️
+- Uses gunDB for live many-to-one sharing
 - All broadcast content and meta-data are public while enabled
 - Open the panEdiKon: https://io.eyalgruss.com/ediking/panedikon,
 and manually add these params, replacing the `...` with your own details:
@@ -65,7 +65,7 @@ and manually add these params, replacing the `...` with your own details:
 You will get a (different) key to give your students.
 Note that this just adds very basic obfuscation, and is not secure at all
 - Click the username/timestamp to enter/exit full screen
-- You can edit the code, but this is __not__ reflected back, and will be overwritten once there is a remote update
+- You can edit the code, but this is __not__ reflected back, and will be overwritten on remote update
 - Note that while there are some protective measures in place, a rogue broadcast could hang the whole gallery.
 Limit this risk by using unique session, group and secret/key
 
