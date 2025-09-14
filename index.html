@@ -965,14 +965,12 @@ function windowResized() {
       const field = e.id.split('_')[1]
       if (field != 'session')
         localStorage['ediking_' + field] = e.value
-      if (pad) {
+      if (field == 'key')
+        put()
+      else if (pad) {
         const data = {modified: new Date().getTime()}
-        if (field == 'key')
-          put()
-        else {
-          data[field] = e.value
-          pad.put(data)
-        }
+        data[field] = e.value
+        pad.put(data)
       }
     }))
     
