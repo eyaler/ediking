@@ -4,6 +4,8 @@ Short link: [tfi.la/e](https://tfi.la/e)
 
 For teaching p5.js: [tfi.la/p5](https://tfi.la/p5)  (p5.js template + disable LLM)
 
+Live gallery for monitoring students remotely: https://io.eyalgruss.com/ediking/panedikon (see [below](#pan))
+
 ### Keys and gestures
 #### Global
 - `Ctrl`+`Shift`+`F` - Show / hide editor (full screen)
@@ -43,13 +45,29 @@ For teaching p5.js: [tfi.la/p5](https://tfi.la/p5)  (p5.js template + disable LL
 - [`?noai`](https://tfi.la/e?noai) - Disable LLM (aka student mode)
 
 
-- `?session=...` - Session number for broadcasting
-- `?user=...` - Username for broadcasting
-- `?group=...` - Group name for broadcasting
-- `?key=...` - Key code for broadcasting (for obfuscation, not real encryption)
+- `?session=...` - Broadcast session number
+- `?user=...` - Broadcast username
+- `?group=...` - Broadcast group name
+- `?key=...` - Broadcast key code
 
 
 - `?pause` - Delay loading code into iframe until next edit (to allow fixing bad code)
+
+### <a id="pan"></a>Broadcasting to the panEdiKon 👁️
+- Uses gunDB for live broadcasting
+- All broadcast content and meta-data are public while enabled
+- Open the panEdiKon: https://io.eyalgruss.com/ediking/panedikon,
+and manually add these params, replacing the `...` with your own details:
+  - `?session=...` - Broadcast session number (optional)
+  - `?group=...` - Broadcast group name
+  - `?secret=...` - Broadcast secret (don't share)
+- Use a short string as a secret for obfuscation.
+You will get a (different) key to give your students.
+Note that this just adds very basic obfuscation, and is not secure at all
+- Click the username/timestamp to enter/exit full screen
+- You can edit the code, but this is __not__ reflected back, and will be overwritten once there is a remote update
+- Note that while there are some protective measures in place, a rogue broadcast could hang the whole gallery.
+Limit this risk by using unique session, group and secret/key
 
 ### iframe convenience features
 - Prevent iframe from stealing focus on load
@@ -57,9 +75,10 @@ For teaching p5.js: [tfi.la/p5](https://tfi.la/p5)  (p5.js template + disable LL
 - Add `target="_blank"` to `a` links of different origin, to allow opening from iframe
 - Grab title, description and favicon from iframe
 - Prevent top level navigation when file dropped on iframe
-- Helper functions for output in iframe: `top.clear()`, `top.log()`, `top.safeLog()` / `top.safelog()` (infinite loop protection)
+- Update code saved in the URL only after iframe has loaded, to make it easier to recover from infinite loops 
+- Helper functions for output in iframe: `top.clear()`, `top.log()`, `top.safeLog()` / `top.safelog()` (infinite loop protection). Instead of `top` you can also use `parent`
 
-### Experimental Writer / Rewriter Chrome API integration
+### Experimental Writer / Rewriter Chromium API integration
 - Models and requirements:
   - Gemini Nano: Chrome desktop 138+, 22 GB disk space, and 4 GB GPU (https://developer.chrome.com/docs/ai/writer-api)
   - Phi-4-mini: Edge desktop 139+, 20 GB disk space, and 5.5 GB GPU (https://learn.microsoft.com/sr-latn-rs/microsoft-edge/web-platform/writing-assistance-apis)
@@ -85,7 +104,7 @@ For teaching p5.js: [tfi.la/p5](https://tfi.la/p5)  (p5.js template + disable LL
   - Tab completions
   - Inline protected code regions (e.g. for tests)
   - Automatic error capturing and prompting for explanations and automatic fixes
-  - Prompt API
+  - Prompt API and better model settings
   - Multimodal input of the rendered iframe screenshot
   - Parse `.prompt` / `.poml` files for system prompt and params
   - Allow LLM to generate its next prompt (can currently be emulated via generated code comments)
@@ -97,7 +116,8 @@ For teaching p5.js: [tfi.la/p5](https://tfi.la/p5)  (p5.js template + disable LL
 - Drag and drop HTML content and links to grab code
 - Direct editing of the iframe (aka designMode) reflected in the code editor
 - Use gunDB or Nostr for persistence, sharing and collaborative editing
-- Syntax highlighting and other code editor niceties
+- Syntax highlighting ([WIP](https://codepen.io/eyaler/pen/NPGOaJb)) and other code editor niceties
+- Individual play/pause and remove/block controls in panEdiKon
 
 ### Fun
 - Recursion (code = ediKing): https://tfi.la/e#recur (LLM is disabled to prevent browser crash)

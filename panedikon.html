@@ -82,6 +82,8 @@
       keycode = btoa(String.fromCharCode(...new Uint8Array(r))).replace(/[+=\/]/g, '').slice(0, secret.length).toLowerCase()
       pad.map().on(update)
       console.log('Broadcast key:', keycode)
+      if (keycode)
+        alert(`Ask your students to put in the key: ${keycode} (case-insensitive)`)
     })
     
     document.title = [id, group, session].join('/')
