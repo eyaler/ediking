@@ -317,6 +317,7 @@ and use Ctrl+V to paste in Moodle)">&#x1f517;</button>
     const min_font_size_factor = .1
     const max_font_size_factor = 10
     const persistent_params = ['temp', 'noai']
+    const broadcasted_params = ['temp', 'prompt', 'pause']
     const max_safe_iters = 1000
     const default_template = 'html'
     const uniform_block_comments = true
@@ -932,7 +933,12 @@ function windowResized() {
     async function put() {
       if (pad)
         if (broadcast.checked) {
-          const content = broadcast_key.value ? btoa(String.fromCharCode(...new TextEncoder().encode(location).map((b, i) => b ^ broadcast_key.value.toLowerCase().charCodeAt(i % broadcast_key.value.length)))) : location.href
+          const url = new URL(location)
+          ;[...url.searchParams.keys()].forEach(k => {
+            if (!broadcasted_params.includes(k))
+              url.searchParams.delete(k)
+          })
+          const content = broadcast_key.value ? btoa(String.fromCharCode(...new TextEncoder().encode(url).map((b, i) => b ^ broadcast_key.value.toLowerCase().charCodeAt(i % broadcast_key.value.length)))) : url
           pad.put({content: content, modified: new Date().getTime(), session: broadcast_session.value, user: broadcast_user.value, group: broadcast_group.value})
         } else
           pad.put(null)

@@ -55,7 +55,7 @@ The panEdiKon gallery for monitoring students remotely: https://io.eyalgruss.com
 
 ### <a id="pan"></a>Broadcasting to The panEdiKon 👁️
 - Uses gunDB for live many-to-one sharing
-- All broadcast content and meta-data are public while enabled
+- All broadcasted content and meta-data are public while enabled
 - Open the panEdiKon: https://io.eyalgruss.com/ediking/panedikon,
 and manually add these params, replacing the `...` with your own details:
   - `?session=...` - Broadcast session number (optional)
@@ -117,7 +117,7 @@ Limit this risk by using unique session, group and secret/key
 - Direct editing of the iframe (aka designMode) reflected in the code editor
 - Use gunDB or Nostr for persistence, sharing and collaborative editing
 - Syntax highlighting ([WIP](https://codepen.io/eyaler/pen/NPGOaJb)) and other code editor niceties
-- Individual play/pause and remove/block controls in panEdiKon
+- Individual play/pause and remove/nullify/block controls in panEdiKon
 
 ### Fun
 - Recursion (code = ediKing): https://tfi.la/e#recur (LLM is disabled to prevent browser crash)
