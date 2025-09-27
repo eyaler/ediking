@@ -503,7 +503,7 @@ function windowResized() {
     
     function set_history_state(url, push) {
       try {
-        if (push)
+        if (!url || push)
           history.pushState(history.state, '', url)
         else
           history.replaceState(history.state, '', url)
@@ -556,7 +556,8 @@ function windowResized() {
         broadcast_key.value = get_url_param('key') || localStorage.getItem('ediking_key')
       }
       active_before_update = document.activeElement
-      console.clear()
+      if (self == top)
+        console.clear()
       if (get_url_param('pause')) {
         set_url_param('pause', false)
         iframe.srcdoc = ''
@@ -624,16 +625,16 @@ function windowResized() {
     
     async function check_model(recheck) {
       const noai = get_url_param('noai') || location.hash == '#recur'
-      const writer_availability = self.Writer && await Writer.availability()
-      const rewriter_availability = self.Rewriter && await Rewriter.availability()
-      if (noai || !writer_availability || !rewriter_availability || writer_availability == 'unavailable' || rewriter_availability == 'unavailable') {
+      const writer_availability = !noai && self.Writer && await Writer.availability()
+      const rewriter_availability = !noai && self.Rewriter && await Rewriter.availability()
+      if (!writer_availability || !rewriter_availability || writer_availability == 'unavailable' || rewriter_availability == 'unavailable') {
         llm.disabled = true
         const label = llm.nextElementSibling
         if (noai)
           label.classList.add('hide')
         else {
           label.role = 'link'
-          label.onclick = () => open('https://developer.chrome.com/docs/ai/writer-api', '_blank')
+          label.onclick = () => open(navigator.userAgent.includes('Edg') ? 'https://learn.microsoft.com/sr-latn-rs/microsoft-edge/web-platform/writing-assistance-apis' : 'https://developer.chrome.com/docs/ai/writer-api', '_blank')
           label.title = 'Writer/Rewriter APIs not supported\nClick for details!'
         }
       } else if (writer_availability == 'available' && rewriter_availability == 'available')
@@ -711,7 +712,7 @@ function windowResized() {
         loop = false
       run_stop.classList.toggle('loop', loop)
       was_loop ||= loop
-      const url = set_url_param('loop', loop)
+      set_url_param('loop', loop)
       
       if (!run_stop.classList.contains('running') || mod == null) {
         if (!llm.checked && mod != null)
@@ -798,7 +799,7 @@ function windowResized() {
           code.setSelectionRange(start, end + code.textLength - orig_len, dir)
         if (!controller.signal.aborted || controller.signal.reason != 'nav') {
           if (code.value != save_code)
-            set_history_state(url, true)
+            set_history_state()
           update()
         }
         if (loop && !controller.signal.aborted)
@@ -828,9 +829,8 @@ function windowResized() {
       if (e.ctrlKey || e.metaKey || e.button == 1)
         window.open(url, '_blank')
       else {
-        set_history_state(location, true)
         controller?.abort('nav')
-        set_history_state(url)
+        set_history_state(url, true)
         code.focus()
         update('')
       }
@@ -938,8 +938,8 @@ function windowResized() {
             if (!broadcasted_params.includes(k))
               url.searchParams.delete(k)
           })
-          const content = broadcast_key.value ? btoa(String.fromCharCode(...new TextEncoder().encode(url).map((b, i) => b ^ broadcast_key.value.toLowerCase().charCodeAt(i % broadcast_key.value.length)))) : url
-          pad.put({content: content, modified: new Date().getTime(), session: broadcast_session.value, user: broadcast_user.value, group: broadcast_group.value})
+          const content = broadcast_key.value ? btoa(String.fromCharCode(...new TextEncoder().encode(url).map((b, i) => b ^ broadcast_key.value.toLowerCase().charCodeAt(i % broadcast_key.value.length)))) : url.href
+          pad.put({content: content, modified: Date.now(), session: broadcast_session.value, user: broadcast_user.value, group: broadcast_group.value})
         } else
           pad.put(null)
     }
@@ -957,7 +957,7 @@ function windowResized() {
           await load_script('https://cdn.jsdelivr.net/npm/gun@0.2020.1241/gun.min.js')
           await load_script('https://cdn.jsdelivr.net/npm/gun@0.2020.1241/lib/webrtc.min.js')
           gun = Gun({peers: gun_peers, localStorage: false, rtc: {room: 'ediking'}})
-          pad = gun.get('ediking').get(new Date().getTime() + '_' + crypto.randomUUID())
+          pad = gun.get('ediking').get(Date.now() + '_' + crypto.randomUUID())
           addEventListener('online', () => {
             gun.opt(gun_peers)
             put()
@@ -974,7 +974,7 @@ function windowResized() {
       if (field == 'key')
         put()
       else if (pad) {
-        const data = {modified: new Date().getTime()}
+        const data = {modified: Date.now()}
         data[field] = e.value
         pad.put(data)
       }

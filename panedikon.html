@@ -145,9 +145,13 @@
         if (divs[key]) {
           const title = divs[key].children[1]
           title.classList.remove('stale')
-          title.textContent = data.user + '\u200e ' + new Date(data.modified).toLocaleTimeString()
+          const date = new Date(data.modified)
+          title.textContent = data.user + '\u200e ' + date.toLocaleTimeString()
           title.offsetWidth  // Restart transition. See: https://css-tricks.com/restart-css-animation/
-          title.classList.add('stale')
+          if (date.toDateString() == new Date(Date.now()).toDateString())
+            title.classList.add('stale')
+          else
+            title.style.opacity = 0.5
         }
       } else if (divs[key]) {
         divs[key].remove()
