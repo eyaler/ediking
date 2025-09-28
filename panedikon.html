@@ -99,6 +99,7 @@
     })
     
     const divs = {}
+    const keys = ['']
     const bad = new Set()
     
     function update(data, key) {
@@ -106,13 +107,12 @@
         if (!divs[key]) {
           const div = document.createElement('div')
           if (!isNaN(new Date(+key.split('_')[0]).getTime()))
-            for (let k in divs)
-              if (k.localeCompare(key) == -1) {
-                divs[key] = document.body.insertBefore(div, divs[k])
+            for (const i in keys)
+              if (keys[i].localeCompare(key) == -1) {
+                divs[key] = document.body.insertBefore(div, divs[keys[i]])
+                keys.splice(i, 0, key)
                 break
               }
-          if (!divs[key])
-            divs[key] = document.body.appendChild(div)
           divs[key].appendChild(document.createElement('iframe'))
           const iframe = divs[key].children[0]
           iframe.sandbox = 'allow-downloads allow-forms allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-scripts'
@@ -146,12 +146,12 @@
           const title = divs[key].children[1]
           title.classList.remove('stale')
           const date = new Date(data.modified)
-          title.textContent = data.user + '\u200e ' + date.toLocaleTimeString()
+          title.textContent = data.user + (data.user ? '\u200e ' : '') + (!session && data.session ? `(${data.session}) ` : '') + date.toLocaleTimeString()
           title.offsetWidth  // Restart transition. See: https://css-tricks.com/restart-css-animation/
           if (date.toDateString() == new Date(Date.now()).toDateString())
             title.classList.add('stale')
           else
-            title.style.opacity = 0.5
+            title.style.opacity = .5
         }
       } else if (divs[key]) {
         divs[key].remove()

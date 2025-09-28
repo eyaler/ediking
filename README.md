@@ -99,6 +99,7 @@ Limit this risk by using unique session, group and secret/key
   - Page reload may crash Chrome - https://issues.chromium.org/issues/428688095
   - Wrong model availability on Chrome launch - https://issues.chromium.org/issues/429183223
   - Invalid state error when loading model - https://issues.chromium.org/issues/441547039
+  - Aborting during model download may crash Chrome
   - After aborting the next generation is delayed
 - Future opportunities:
   - Tab completions

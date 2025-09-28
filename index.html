@@ -311,7 +311,7 @@ and use Ctrl+V to paste in Moodle)">&#x1f517;</button>
   
   <script>
     'use strict'
-    let prev_key, active_before_update, prom_active, writer, rewriter, controller, user_click, loop, was_loop, gun, pad
+    let prev_key, active_before_update, prom_active, llm_started, writer, rewriter, controller, user_click, loop, was_loop, gun, pad
     let font_size_factor = 1
     const font_size_factor_step = .05
     const min_font_size_factor = .1
@@ -494,18 +494,19 @@ function windowResized() {
       return prom.value
     }
     
-    function get_url_param(param='disp') {
-      const val = new URLSearchParams(location.search).get(param)
-      if (param == 'prompt')
+    function get_url_param(key='disp') {
+      const val = new URLSearchParams(location.search).get(key)
+      if (key == 'prompt')
         return val ?? ''
       return val == '' ? 1 : isNaN(val) ? val : +val
     }
     
     function set_history_state(url, push) {
       try {
-        if (!url || push)
+        if (!url || push) {
+          set_url_param('loop', false)
           history.pushState(history.state, '', url)
-        else
+        } else
           history.replaceState(history.state, '', url)
       } catch {}  // For iframes
     }
@@ -517,7 +518,7 @@ function windowResized() {
       else
         url.searchParams.delete(key)
       set_history_state(url)
-      return url
+      return val
     }
     
     function fix_disp_param() {
@@ -657,41 +658,26 @@ function windowResized() {
     
     llm.addEventListener('input', async () => {
       if (llm.checked) {
-        if (writer == null || rewriter == null) {
+        if (!llm_started) {
+          llm_started = true
           prom.readOnly = true
           prom.value = 'Loading model...'
           run_stop.classList.add('hide')
-          let phase
           try {
-            if (writer == null) {
-              writer = false
-              phase = 'writer'
-              const monitor_opt = await Writer.availability() != 'available' ? {monitor} : {}
-              writer = await Writer.create({...monitor_opt, ...shared_context, length: 'long'})
-            }
-            if (rewriter == null) {
-              rewriter = false
-              phase = 'rewriter'
-              const monitor_opt = await Rewriter.availability() != 'available' ? {monitor} : {}
-              rewriter = await Rewriter.create({...monitor_opt, ...shared_context})
-            }
-            if (writer && rewriter) {
-              prom.value = get_url_param('prompt')
-              prom.readOnly = false
-              run_stop.classList.remove('hide')
-              if (get_url_param('loop'))
-                generate(true)
-            }
+            const create_options = {monitor, ...shared_context}
+            writer = await Writer.create({...create_options, length: 'long'})
+            rewriter = await Rewriter.create(create_options)
+            prom.value = get_url_param('prompt')
+            prom.readOnly = false
+            run_stop.classList.remove('hide')
+            if (get_url_param('loop') && llm.checked)
+              generate(true)
           } catch (error) {
-            if (!writer && phase == 'writer')
-              writer = null
-            if (!rewriter && phase == 'rewriter')
-              rewriter = null
-            console.log(error)
-            alert(error)
             llm.checked = false
+            console.error(error)
+            alert(error)
           }
-        } else if (user_click)
+        } else if (user_click && !prom.readOnly)
           prom.focus()
       } else
         code.focus()
@@ -764,7 +750,7 @@ function windowResized() {
               let after_context = code_after.trim()
               let code_context = '\n<!--/* COMPLETE MISSING CODE HERE AND OUTPUT ONLY THIS PART */-->\n'
               prompt_text += '\n\nCURRENT CODE:\n\n'
-              while ((before_context || after_context) && (shared_context + prompt_text + code_context).length < writer.inputQuota * chars_to_tokens) {
+              while ((before_context || after_context) && (shared_context[sharedContext] + prompt_text + code_context).length < writer.inputQuota * chars_to_tokens) {
                 code_context = before_context.slice(-1) + code_context + after_context[0]
                 before_context = before_context.slice(0, -1)
                 after_context = after_context.slice(1)
@@ -784,9 +770,10 @@ function windowResized() {
             await generate(null, start, start < end ? end + code.textLength - orig_len : end, dir)
         } catch (error) {
           if (error.name == 'QuotaExceededError') {
-            alert(`Error: LLM input (code + prompt) is ${error.requested.toLocaleString()} tokens,\nbut model is limited to ${error.quota.toLocaleString()} tokens.`);
-            if (loop)
-              run_stop.click()
+            loop = false
+            const msg = `Error: LLM input (code + prompt) is ${error.requested.toLocaleString()} tokens,\nbut model is limited to ${error.quota.toLocaleString()} tokens.`
+            console.error(msg)
+            alert(msg)
           } else if (error.name != 'AbortError' && error != 'nav') {
             console.error(error)
             if (was_loop)
@@ -988,7 +975,7 @@ function windowResized() {
     broadcast_dialog.addEventListener('keydown', e => {
       if (e.key == 'Enter') {
         const inputs = [...broadcast_dialog.querySelectorAll('input')]
-        for (let i in inputs)
+        for (const i in inputs)
           if (inputs[i] == document.activeElement) {
             if (i == inputs.length - 1)
               broadcast_dialog.close()
