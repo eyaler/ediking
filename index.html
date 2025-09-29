@@ -931,10 +931,9 @@ function windowResized() {
           pad.put(null)
     }
     
-    addEventListener('beforeunload', () => {
-      if (pad)
-        pad.put(null)
-    })
+    function stop_gun() {
+      pad?.put(null)
+    }
     
     broadcast.addEventListener('input', async () => {
       if (broadcast.checked) {
@@ -950,7 +949,9 @@ function windowResized() {
             put()
           })
         }
-      }
+        addEventListener('beforeunload', stop_gun)
+      } else
+        removeEventListener('beforeunload', stop_gun)
       put()
     })
     
