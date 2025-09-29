@@ -552,9 +552,9 @@ function windowResized() {
         const session = get_url_param('session')
         if (session > 0)
           broadcast_session_value = session
-        broadcast_user.value = get_url_param('user') || localStorage.getItem('ediking_user')
-        broadcast_group.value = get_url_param('group') || localStorage.getItem('ediking_group')
-        broadcast_key.value = get_url_param('key') || localStorage.getItem('ediking_key')
+        broadcast_user.value = get_url_param('user') || sessionStorage.getItem('ediking_user') || localStorage.getItem('ediking_user')
+        broadcast_group.value = get_url_param('group') || sessionStorage.getItem('ediking_group') || localStorage.getItem('ediking_group')
+        broadcast_key.value = get_url_param('key') || sessionStorage.getItem('ediking_key') || localStorage.getItem('ediking_key')
       }
       active_before_update = document.activeElement
       if (self == top)
@@ -957,9 +957,11 @@ function windowResized() {
     
     broadcast_dialog.querySelectorAll('input').forEach(e => e.addEventListener('input', () => {
       const field = e.id.split('_')[1]
-      if (field != 'session')
-        localStorage['ediking_' + field] = e.value
-      if (field == 'key')
+      if (field != 'session') {
+        const field_key = 'ediking_' + field
+        sessionStorage[field_key] = e.value
+        localStorage[field_key] = e.value
+      } if (field == 'key')
         put()
       else if (pad) {
         const data = {modified: Date.now()}
