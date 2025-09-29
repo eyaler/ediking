@@ -57,11 +57,9 @@
       transform-origin: 0 0;
       width: calc(100% * var(--factor));
     }
-
-    .fullscreen iframe {
-      height: 100%;
-      scale: 1;
-      width: 100%;
+    
+    body > div:only-of-type iframe, .fullscreen iframe {
+      --factor: 1;
     }
     
     .stale {

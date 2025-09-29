@@ -76,7 +76,7 @@ Limit this risk by using unique session, group and secret/key
 - Grab title, description and favicon from iframe
 - Prevent top level navigation when file dropped on iframe
 - Update code saved in the URL only after iframe has loaded, to make it easier to recover from infinite loops 
-- Helper functions for output in iframe: `top.clear()`, `top.log()`, `top.safeLog()` / `top.safelog()` (infinite loop protection; but will also stop p5.js `draw()` unless you call `top.clear()`). Instead of `top` you can also use `parent`
+- Helper functions for output in iframe: `parent.clear()`, `parent.log()`, `parent.safeLog()` / `parent.safelog()` (infinite loop protection; but will also stop p5.js `draw()` unless you call `top.clear()`). If not embedded, instead of `parent` you can also use `top`
 
 ### Experimental Writer / Rewriter Chromium API integration
 - Models and requirements:
