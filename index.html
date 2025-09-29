@@ -785,7 +785,7 @@ function windowResized() {
         if (start < end)
           code.setSelectionRange(start, end + code.textLength - orig_len, dir)
         if (!controller.signal.aborted || controller.signal.reason != 'nav') {
-          if (code.value != save_code)
+          if (save_code && code.value != save_code)
             set_history_state()
           update()
         }
