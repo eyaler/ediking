@@ -41,8 +41,8 @@
       position: absolute;
       transform-origin: 100% 100%;
       transition: all 1s, color 0s 0s;
-      user-select: none;
       -webkit-user-select: none;
+      user-select: none;
     }
     
     h1:hover {
@@ -97,7 +97,6 @@
     })
     
     const divs = {}
-    const keys = ['']
     const bad = new Set()
     
     function update(data, key) {
@@ -105,10 +104,11 @@
         if (!divs[key]) {
           const div = document.createElement('div')
           if (!isNaN(new Date(+key.split('_')[0]).getTime()))
-            for (const i in keys)
-              if (keys[i].localeCompare(key) == -1) {
-                divs[key] = document.body.insertBefore(div, divs[keys[i]])
-                keys.splice(i, 0, key)
+            for (const d of [...document.querySelectorAll('div'), null])
+              k = d?.dataset.key || ''
+              if (k.localeCompare(key) == -1) {
+                divs[key] = document.body.insertBefore(div, d)
+                divs[key].dataset.key = key
                 break
               }
           divs[key].appendChild(document.createElement('iframe'))

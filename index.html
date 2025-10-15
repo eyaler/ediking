@@ -1002,9 +1002,9 @@ function windowResized() {
       return key
     }
     
-    document.addEventListener('keydown', global_keys_handler)
+    addEventListener('keydown', global_keys_handler)
     
-    document.addEventListener('keydown', e => {
+    addEventListener('keydown', e => {
       if ((e.altKey || e.getModifierState?.('AltGraph')) && !e.ctrlKey && !e.metaKey && !e.shiftKey) {
         let font_size_change = true
         if (e.key == '0' || e.code == 'Numpad0')  // For AZERTY keyboard

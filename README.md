@@ -36,8 +36,8 @@ The panEdiKon gallery for monitoring students remotely: https://io.eyalgruss.com
 - [`?temp`](https://tfi.la/e?temp) - Empty
 - [`?temp=html`](https://tfi.la/e?temp=html) - HTML template
 - [`?temp=js`](https://tfi.la/e?temp=js) - JS template
-- [`?temp=p5`](https://tfi.la/e?temp=p5) - p5.js template
-- [`?temp=q5`](https://tfi.la/e?temp=q5) - q5.js template
+- [`?temp=p5`](https://tfi.la/e?temp=p5) - [p5.js](https://p5js.org/) template
+- [`?temp=q5`](https://tfi.la/e?temp=q5) - [q5.js](https://q5js.org/) template
 
 
 - `?prompt=...` - Prompt (when LLM is available)
