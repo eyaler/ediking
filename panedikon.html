@@ -105,8 +105,7 @@
           const div = document.createElement('div')
           if (!isNaN(new Date(+key.split('_')[0]).getTime()))
             for (const d of [...document.querySelectorAll('div'), null])
-              k = d?.dataset.key || ''
-              if (k.localeCompare(key) == -1) {
+              if (key.localeCompare(d?.dataset.key || '') == 1) {
                 divs[key] = document.body.insertBefore(div, d)
                 divs[key].dataset.key = key
                 break
