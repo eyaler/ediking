@@ -119,6 +119,7 @@ Limit this risk by using unique session, group and secret/key
 - Use gunDB or Nostr for persistence, sharing and collaborative editing
 - Syntax highlighting ([WIP](https://codepen.io/eyaler/pen/NPGOaJb)) and other code editor niceties
 - Individual play/pause and remove/nullify/block controls in panEdiKon
+- Browse next/prev in fullscreen in panEdiKon
 
 ### Fun
 - Recursion (code = ediKing): https://tfi.la/e#recur (LLM is disabled to prevent browser crash)

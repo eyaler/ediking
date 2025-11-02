@@ -29,8 +29,9 @@
       position: relative;
     }
     
-    h1 {
+    button {
       background: aliceblue;
+      border: none;
       cursor: default;
       font-family: monospace;
       font-size: 1em;
@@ -45,7 +46,7 @@
       user-select: none;
     }
     
-    h1:hover {
+    button:hover {
       scale: 1.5;
     }
     
@@ -95,10 +96,28 @@
       gun.opt(gun_peers)
       pad.get('heartbeat').put('heartbeat')
     })
-    
+
+    function unfocus() {
+        active_before_update.focus()
+    }
+
+    function fork(e) {
+        const url = e.currentTarget.parentElement.firstChild.src
+        if (url)
+            window.open(url, '_blank')
+    }
+
+    function click(e) {
+      if (e.ctrlKey || e.metaKey || e.button == 1)
+        fork(e)
+      else
+        toggle_fullscreen(e, null, null, e.currentTarget.parentElement)
+    }
+
     const divs = {}
     const bad = new Set()
-    
+    let active_before_update = document.body
+
     function update(data, key) {
       if (!bad.has(key) && data?.content && (data.group || '').toLowerCase() == group && (!session || data.session == session)) {
         if (!divs[key]) {
@@ -110,18 +129,19 @@
                 divs[key].dataset.key = key
                 break
               }
-          divs[key].appendChild(document.createElement('iframe'))
-          const iframe = divs[key].children[0]
+          const iframe = divs[key].appendChild(document.createElement('iframe'))
           iframe.sandbox = 'allow-downloads allow-forms allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-scripts'
           iframe.allow = 'accelerometer; ambient-light-sensor; attribution-reporting; autoplay; bluetooth; browsing-topics; camera; captured-surface-control; compute-pressure; cross-origin-isolated; deferred-fetch; deferred-fetch-minimal; display-capture; encrypted-media; fullscreen; geolocation; gyroscope; hid; identity-credentials-get; idle-detection; language-detector; language-model; local-fonts; magnetometer; microphone; midi; otp-credentials; payment; picture-in-picture; proofreader; publickey-credentials-create; publickey-credentials-get; rewriter; screen-wake-lock; serial; storage-access; summarizer; translator; usb; web-share; window-management; writer; xr-spatial-tracking'
           iframe.allowFullscreen = true
           iframe.credentialless = true
-          const h1 = divs[key].appendChild(document.createElement('h1'))
-          h1.onclick = e => toggle_fullscreen(e, null, null, divs[key])
-          h1.title = 'Fullscreen'
+          iframe.addEventListener('load', unfocus)
+          const button = divs[key].appendChild(document.createElement('button'))
+          button.addEventListener('click', click)
+          button.addEventListener('fork', fork)
+          button.title = 'Fullscreen ([Ctrl+Click] to fork to new tab)'
         }
         
-        const iframe = divs[key].children[0]
+        const iframe = divs[key].firstChild
         if (keycode && data.content.startsWith('http')) {
           iframe.removeAttribute('src')
           iframe.srcdoc = `<h1>Missing remote key - should be: ${keycode}</h1>`
@@ -129,6 +149,7 @@
           const url = keycode ? new TextDecoder().decode(new Uint8Array([...atob(data.content)].map((c, i) => c.charCodeAt(0) ^ keycode.charCodeAt(i % keycode.length)))) : data.content
           if (url.startsWith(location.href.split('/').slice(0, -1).join('/'))) {
             iframe.removeAttribute('srcdoc')
+            active_before_update = document.activeElement
             iframe.src = url
           } else if (url.startsWith('http')) {
             bad.add(key)
@@ -140,7 +161,7 @@
           }
         }
         if (divs[key]) {
-          const title = divs[key].children[1]
+          const title = divs[key].lastChild
           title.classList.remove('stale')
           const date = new Date(data.modified)
           title.textContent = data.user + (data.user ? '\u200e ' : '') + (!session && data.session ? `(${data.session}) ` : '') + date.toLocaleTimeString()
@@ -180,7 +201,7 @@
           elem.addEventListener('fullscreenchange', () => {
             if (elem.classList.toggle('fullscreen')) {
               if (landscape)
-                screen.orientation.lock('landscape').catch(e => console.warn(e.message))  // Works only in Chrome Android. See: https://bugzilla.mozilla.org/show_bug.cgi?id=1744125
+                screen.orientation.lock('landscape').catch(e => console.warn(e.message))
                 request_wake_lock()
                 document.addEventListener('visibilitychange', visibility_change_handler)
               } else

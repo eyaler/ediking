@@ -202,7 +202,7 @@
       border: none;
     }
     
-    @media (aspect-ratio > 16 / 18) {
+    @media (aspect-ratio > 8 / 9) {
       body {
         grid-template-columns: auto 1fr;
       }
@@ -232,7 +232,7 @@
       }
     }
     
-    @media (aspect-ratio <= 16 / 18) {
+    @media (aspect-ratio <= 8 / 9) {
       body {
         grid-template-rows: auto 1fr;
       }
@@ -268,14 +268,14 @@
     <label for="wrap" tabindex="0" title="Word wrap">w</label>
     <input id="llm" type="checkbox" autocomplete="off" aria-controls="prom" aria-expanded="false">
     <label for="llm" tabindex="0" title="LLM">&#x1f916;</label>
-    <button id="run_stop" onclick="generate(event.ctrlKey || event.metaKey || event.button == 1)" aria-keyshortcuts="Ctrl+Enter Ctrl+Shift+Enter" title="Run/stop generation [Ctrl+Enter]
+    <button id="run_stop" onclick="generate(event.ctrlKey || event.metaKey || event.button == 1)" onauxclick="generate(true)" aria-keyshortcuts="Ctrl+Enter Ctrl+Shift+Enter" title="Run/stop generation [Ctrl+Enter]
 Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
     <button onclick="update()" title="Reload iframe">&#x27f3;</button>
-    <button onclick="new_editor(event)" title="New">&#x1f195;</button>
+    <button onclick="new_editor(event.ctrlKey || event.metaKey || event.button == 1)" onauxclick="new_editor(true)" title="New">&#x1f195;</button>
     <input id="open_button" type="file" multiple>
     <label for="open_button" tabindex="0" title="Open file(s)">&#x1f4c2;&#xfe0e;</label>
     <button onclick="save()" aria-keyshortcuts="Ctrl+S" title="Save file [Ctrl+S]">&#x1f4be;&#xfe0e;</button>
-    <button id="share_button" onclick="share(event.ctrlKey || event.metaKey || event.button == 1)" title="Share (or [Ctrl+Click] to copy link as HTML,
+    <button id="share_button" onclick="share(event.ctrlKey || event.metaKey || event.button == 1)" onauxclick="share(true)" title="Share (or [Ctrl+Click] to copy link as HTML,
 and use Ctrl+V to paste in Moodle)">&#x1f517;</button>
     <input id="broadcast" autocomplete="off">
     <label for="broadcast" tabindex="0" title="Broadcast (public)" onclick="if (broadcast.type != 'checkbox') {broadcast.checked = false; broadcast.type = 'checkbox'}">&#x1f52b;&#xfe0e;</label>
@@ -493,14 +493,7 @@ function windowResized() {
     function get_prompt() {
       return prom.value
     }
-    
-    function get_url_param(key='disp') {
-      const val = new URLSearchParams(location.search).get(key)
-      if (key == 'prompt')
-        return val ?? ''
-      return val == '' ? 1 : isNaN(val) ? val : +val
-    }
-    
+
     function set_history_state(url, push) {
       try {
         if (!url || push) {
@@ -510,17 +503,26 @@ function windowResized() {
           history.replaceState(history.state, '', url)
       } catch {}  // For iframes
     }
-    
-    function set_url_param(key, val) {
+
+    function set_url_param(key, val=true) {
       const url = new URL(location)
-      if (val)
-        url.searchParams.set(key, val === true ? '' : val)
-      else
+      if (val === false)
         url.searchParams.delete(key)
+      else
+        url.searchParams.set(key, val === true ? '' : val)
       set_history_state(url)
       return val
     }
-    
+
+    function get_url_param(key='disp', new_val) {
+      const val = new URLSearchParams(location.search).get(key)
+      if (new_val != null && new_val !== val && (typeof new_val != 'number' || new_val != val) && (new_val !== true || val != '') && (new_val !== false || val !== null))
+        set_url_param(key, new_val)
+      if (key == 'prompt')
+        return val ?? ''
+      return val == '' ? 1 : isNaN(val) ? val : +val
+    }
+
     function fix_disp_param() {
       const disp = get_url_param()
       if (!disp && full.checked || disp == 1 && !full.checked)
@@ -549,20 +551,19 @@ function windowResized() {
           code.value = temp.replace('  ', '')
           code.setSelectionRange(caret, caret)
         }
-        const session = get_url_param('session')
+        const session = get_url_param('session', false)
         if (session > 0)
           broadcast_session_value = session
-        broadcast_user.value = get_url_param('user') || sessionStorage.getItem('ediking_user') || localStorage.getItem('ediking_user')
-        broadcast_group.value = get_url_param('group') || sessionStorage.getItem('ediking_group') || localStorage.getItem('ediking_group')
-        broadcast_key.value = get_url_param('key') || sessionStorage.getItem('ediking_key') || localStorage.getItem('ediking_key')
+        broadcast_user.value = get_url_param('user', false) || sessionStorage.getItem('ediking_user') || localStorage.getItem('ediking_user')
+        broadcast_group.value = get_url_param('group', false) || sessionStorage.getItem('ediking_group') || localStorage.getItem('ediking_group')
+        broadcast_key.value = get_url_param('key', false) || sessionStorage.getItem('ediking_key') || localStorage.getItem('ediking_key')
       }
       active_before_update = document.activeElement
       if (self == top)
         console.clear()
-      if (get_url_param('pause')) {
-        set_url_param('pause', false)
+      if (get_url_param('pause', false))
         iframe.srcdoc = ''
-      } else
+      else
         iframe.srcdoc = code.value
       if (editor.nextSibling != iframe)
         editor.after(iframe)
@@ -635,7 +636,7 @@ function windowResized() {
           label.classList.add('hide')
         else {
           label.role = 'link'
-          label.onclick = () => open(navigator.userAgent.includes('Edg') ? 'https://learn.microsoft.com/sr-latn-rs/microsoft-edge/web-platform/writing-assistance-apis' : 'https://developer.chrome.com/docs/ai/writer-api', '_blank')
+          label.onclick = () => window.open(navigator.userAgent.includes('Edg') ? 'https://learn.microsoft.com/sr-latn-rs/microsoft-edge/web-platform/writing-assistance-apis' : 'https://developer.chrome.com/docs/ai/writer-api', '_blank')
           label.title = 'Writer/Rewriter APIs not supported\nClick for details!'
         }
       } else if (writer_availability == 'available' && rewriter_availability == 'available')
@@ -803,7 +804,7 @@ function windowResized() {
     
     // New, open, save, share, broadcast
     
-    function new_editor(e) {
+    function new_editor(mod) {
       const search = new URLSearchParams(location.search)
       ;[...search.keys()].forEach(k => {
         if (!persistent_params.includes(k))
@@ -813,7 +814,7 @@ function windowResized() {
         search.set('temp', default_template)
       const url = location.pathname + '?' + search
       
-      if (e.ctrlKey || e.metaKey || e.button == 1)
+      if (mod)
         window.open(url, '_blank')
       else {
         controller?.abort('nav')
