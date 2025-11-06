@@ -428,7 +428,7 @@ function windowResized() {
 	</div>
 	<div style="background-color: #ffbb00; color: black;">
 		<p>You can edit my code in the adjacent editor.</p>
-		<p>If you got <b>Chrome/Edge desktop 138/139+</b>, <b>22/20 GB disk space</b>, and <b>4/5.5 GB GPU</b>... you can use the built-in <b>Gemini Nano / Phi-4-mini LLM</b> to write and edit code. Autovibe mode included.</p>
+		<p>If you got <b>Chrome / Edge desktop</b> and enough memory, you can use the built-in <b>Gemini Nano / Phi-4-mini LLM</b> to write and edit code. Autovibe mode included.</p>
 		<p>By the way, everything here is 100% client-side.</p>
 	</div>
 	<div style="background-color: blue; color: #00ff00;">
@@ -516,7 +516,7 @@ function windowResized() {
 
     function get_url_param(key='disp', new_val) {
       const val = new URLSearchParams(location.search).get(key)
-      if (new_val != null && new_val !== val && (typeof new_val != 'number' || new_val != val) && (new_val !== true || val != '') && (new_val !== false || val !== null))
+      if (new_val != null && new_val !== val && (typeof new_val != 'number' || String(new_val) != val) && (new_val !== true || val != '') && (new_val !== false || val !== null))
         set_url_param(key, new_val)
       if (key == 'prompt')
         return val ?? ''
@@ -629,9 +629,9 @@ function windowResized() {
       const noai = get_url_param('noai') || location.hash == '#recur'
       const writer_availability = !noai && self.Writer && await Writer.availability()
       const rewriter_availability = !noai && self.Rewriter && await Rewriter.availability()
+      const label = llm.nextElementSibling
       if (!writer_availability || !rewriter_availability || writer_availability == 'unavailable' || rewriter_availability == 'unavailable') {
         llm.disabled = true
-        const label = llm.nextElementSibling
         if (noai)
           label.classList.add('hide')
         else {
@@ -646,6 +646,8 @@ function windowResized() {
           llm.click()
       else if (!recheck)
         setTimeout(check_model, 5000, true)  // Delay to deal with https://issues.chromium.org/issues/429183223
+      else if (writer_availability == 'downloadable' || rewriter_availability == 'downloadable')
+        label.title = 'LLM (download model)'
     }
     
     function monitor(m) {
@@ -663,6 +665,7 @@ function windowResized() {
           llm_started = true
           prom.readOnly = true
           prom.value = 'Loading model...'
+          llm.nextElementSibling.title = 'LLM'
           run_stop.classList.add('hide')
           try {
             const create_options = {monitor, ...shared_context}

@@ -80,8 +80,8 @@ Limit this risk by using unique session, group and secret/key
 
 ### Experimental Writer / Rewriter Chromium API integration
 - Models and requirements:
-  - Gemini Nano: Chrome desktop 138+, 22 GB disk space, and 4 GB GPU (https://developer.chrome.com/docs/ai/writer-api)
-  - Phi-4-mini: Edge desktop 139+, 20 GB disk space, and 5.5 GB GPU (https://learn.microsoft.com/sr-latn-rs/microsoft-edge/web-platform/writing-assistance-apis)
+  - Gemini Nano: Chrome desktop 138+, 22 GB disk space, and 16 GB RAM or 4 GB VRAM (https://developer.chrome.com/docs/ai/writer-api)
+  - Phi-4-mini: Edge desktop 139+, 20 GB disk space, and 5.5 GB VRAM (https://learn.microsoft.com/sr-latn-rs/microsoft-edge/web-platform/writing-assistance-apis)
 - API explainer: https://github.com/webmachinelearning/writing-assistance-apis
 - LLM patterns used here:
   1. __Write from scratch__: no code -> `write(fullcode_prompt + prompt)`
@@ -123,4 +123,4 @@ Limit this risk by using unique session, group and secret/key
 
 ### Fun
 - Recursion (code = ediKing): https://tfi.la/e#recur (LLM is disabled to prevent browser crash)
-- Alien translation airlock: https://tfi.la/e?loop&prompt=Communicate+with+the+aliens+using+text%2C+shapes+and+colors.+Change+the+prevoius+message+and+make+it+even+more+psychedelic%21#%3C!DOCTYPE%20html%3E%0A%3Chtml%20lang%3D%22en%22%3E%0A%3Cbody%3E%0A%3Ch1%3EMessage%20to%20the%20aliens...%3C%2Fh1%3E%0A%3C%2Fbody%3E%0A%3C%2Fhtml%3E (when LLM is available)
+- Alien translation airlock: https://tfi.la/e?loop&prompt=Communicate+with+the+aliens+using+text%2C+shapes+and+colors.+Change+the+prevoius+message+and+make+it+even+more+psychedelic%21#%3C!DOCTYPE%20html%3E%0A%3Chtml%20lang%3D%22en%22%3E%0A%3Cbody%3E%0A%3Ch1%3EMessage%20to%20the%20aliens...%3C%2Fh1%3E%0A%3C%2Fbody%3E%0A%3C%2Fhtml%3E (when LLM is available; For first time use, click the robot icon to download the model)
