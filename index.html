@@ -929,7 +929,7 @@ function windowResized() {
             if (!broadcasted_params.includes(k))
               url.searchParams.delete(k)
           })
-          const content = broadcast_key.value ? btoa(String.fromCharCode(...new TextEncoder().encode(url).map((b, i) => b ^ broadcast_key.value.toLowerCase().charCodeAt(i % broadcast_key.textLength)))) : url.href
+          const content = broadcast_key.value ? btoa(String.fromCharCode(...new TextEncoder().encode(url).map((b, i) => b ^ broadcast_key.value.toLowerCase().charCodeAt(i % broadcast_key.value.length)))) : url.href
           pad.put({content: content, modified: Date.now(), session: broadcast_session.value, user: broadcast_user.value, group: broadcast_group.value})
         } else
           pad.put(null)
