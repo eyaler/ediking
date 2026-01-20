@@ -146,7 +146,7 @@
           iframe.removeAttribute('src')
           iframe.srcdoc = `<h1>Missing remote key - should be: ${keycode}</h1>`
         } else {
-          const url = keycode ? new TextDecoder().decode(new Uint8Array([...atob(data.content)].map((c, i) => c.charCodeAt(0) ^ keycode.charCodeAt(i % keycode.length)))) : data.content
+          const url = keycode ? new TextDecoder().decode(new Uint8Array([...atob(data.content)].map((c, i) => c.charCodeAt() ^ keycode.charCodeAt(i % keycode.length)))) : data.content
           if (url.startsWith(location.href.split('/').slice(0, -1).join('/'))) {
             iframe.removeAttribute('srcdoc')
             active_before_update = document.activeElement
