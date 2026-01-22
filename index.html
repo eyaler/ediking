@@ -277,7 +277,7 @@ Looping/no-loop generation [Ctrl+Shift+Enter] or [Ctrl+Click]"></button>
     <button onclick="save()" aria-keyshortcuts="Ctrl+S" title="Save file [Ctrl+S]">&#x1f4be;&#xfe0e;</button>
     <button id="share_button" onclick="share(event.ctrlKey || event.metaKey || event.button == 1)" onauxclick="share(true)" title="Share (or [Ctrl+Click] to copy link as HTML,
 and use Ctrl+V to paste in Moodle)">&#x1f517;</button>
-    <input id="broadcast" autocomplete="off">
+    <input id="broadcast" autocomplete="off">  <!-- type="checkbox" added programmatically to force reset -->
     <label for="broadcast" tabindex="0" title="Broadcast (public)" onclick="if (broadcast.type != 'checkbox') {broadcast.checked = false; broadcast.type = 'checkbox'}">&#x1f52b;&#xfe0e;</label>
     <a href="https://github.com/eyaler/ediking" target="_blank" title="Code and documentation on GitHub">&#x1f431;</a>
   </div>
@@ -291,21 +291,21 @@ and use Ctrl+V to paste in Moodle)">&#x1f517;</button>
       </label>
       <label>
         User:
-        <input id="broadcast_user" type="text" autocomplete="off">
+        <input id="broadcast_user" autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false">
       </label>
       <label>
         Group:
-        <input id="broadcast_group" type="text" autocomplete="off">
+        <input id="broadcast_group" autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false">
       </label>
       <label>
         Key:
-        <input id="broadcast_key" type="text" autocomplete="off">
+        <input id="broadcast_key" autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false">
       </label>
     </div>
   </dialog>
   
   <div id="editor">
-    <textarea id="code" autocomplete="off" autocorrect="off" autofocus placeholder="Code here." oninput="update()"></textarea>
+    <textarea id="code" autocapitalize="off" autocomplete="off" autocorrect="off" autofocus placeholder="Code here." oninput="update()"></textarea>
     <textarea id="prom" autocomplete="off" placeholder="Prompt here." rows="1"></textarea>
   </div>
   
