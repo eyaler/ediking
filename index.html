@@ -1097,9 +1097,9 @@ function windowResized() {
     
     editor.addEventListener('keydown', e => {
       if (document.execCommand && !e.altKey && !e.getModifierState?.('AltGraph')
-          && (['Enter', 'Home', 'End', 'Tab'].includes(e.key) && !e.ctrlKey && !e.metaKey
+          && ((['Enter', 'Home', 'End', 'Tab'].includes(e.key) || e.key == 'Escape' && !e.shiftKey) && !e.ctrlKey && !e.metaKey
               || e.key == '/' && (e.ctrlKey || e.metaKey) && !e.shiftKey)) {
-        if (e.key != 'End' || prev_key == 'End')
+        if ((e.key != 'End' || prev_key == 'End') && e.key != 'Escape')
           e.preventDefault()
         const textarea = e.target
         const text = textarea.value
@@ -1151,7 +1151,12 @@ function windowResized() {
               textarea.selectionStart = caret
           }
         }
-        
+
+        else if (e.key == 'Escape' && start != end) {  // Remove selection
+            const caret = dir == 'forward' ? end : start
+            textarea.setSelectionRange(caret, caret)
+        }
+
         else if (e.key == 'Tab') {  // Indent / unindent at caret or multi-line for selection
           if (end > start) {
             const block_start = safe_last_index_of_newline(text, start)
