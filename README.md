@@ -4,7 +4,7 @@ Short link: [tfi.la/e](https://tfi.la/e)
 
 For teaching p5.js: [tfi.la/p5](https://tfi.la/p5)  (p5.js template + disable LLM)
 
-The panEdiKon gallery for monitoring students remotely: https://io.eyalgruss.com/ediking/panedikon (see [below](#pan))
+The panEdiKon gallery for monitoring students remotely: [tfi.la/e/panedikon](https://tfi.la/e/panedikon) (see [below](#pan))
 
 ### Keys and gestures
 #### Global
@@ -57,7 +57,7 @@ The panEdiKon gallery for monitoring students remotely: https://io.eyalgruss.com
 ### <a id="pan"></a>Broadcasting to The panEdiKon 👁️
 - Uses gunDB for live many-to-one sharing
 - All broadcasted content and meta-data are public while enabled
-- Open the panEdiKon: https://io.eyalgruss.com/ediking/panedikon,
+- Open the panEdiKon: [tfi.la/e/panedikon](https://tfi.la/e/panedikon),
 and manually add these params, replacing the `...` with your own details:
   - `?session=...` - Broadcast session number (optional)
   - `?group=...` - Broadcast group name
